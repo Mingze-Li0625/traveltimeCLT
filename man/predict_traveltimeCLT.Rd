@@ -5,20 +5,20 @@
 \title{Travel time estimation modeling using Central Limit Theorem}
 \usage{
 predict_traveltimeCLT(
-  obj.traveltime = NULL,
+  traveltimeCLT_obj = NULL,
   data.test = NULL,
   bin = NULL,
   rules = NULL
 )
 }
 \arguments{
-\item{obj.traveltime}{Object coming from the function traveltimeCLT}
-
 \item{data.test}{Test set.}
 
 \item{bin}{Allows to select a specific timebin from the dataset.}
 
 \item{rules}{Need to represent a list containing, start, end, days and tag for each timebin of the dataset (see example).}
+
+\item{obj.traveltime}{Object coming from the function traveltimeCLT}
 }
 \description{
 This function allows to calculate travel time estimation confidence intervals on the test set.
