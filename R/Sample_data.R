@@ -1,12 +1,11 @@
-#' Travel time estimation modeling using Central Limit Theorem
+#' Sampling train dataset according to input time-bin.
 #'
-#' This function allows to calculate travel time estimation confidence intervals on the test set.
-#' @param obj.traveltime Object coming from the function traveltimeCLT
-#' @param data.test Test set.
-#' @param bin Allows to select a specific timebin from the dataset.
-#' @param rules Need to represent a list containing, start, end, days and tag for each timebin of the dataset (see example).
+#' @param data.train Transformed train dataset coming from the function Create_graph
+#' @param bin Allows to select a specific time-bin from the dataset.
+#' @param M The number of samples to use from the train set. It is usefull especially when applying the travel time estimation algorithm on a specific time-bin.
+
 #' @examples
-#' predict.traveltimeCLT(obj.traveltime = traveltimeCLT, data.test = test, bin = "MR", rules = list(list(start='6:30', end= '9:00', days = 0:6, tag='MR'),list(start='15:00', end= '18:00', days = 0:6, tag='ER')))
+#' sample_data(data.train = graph_obj$data.train, bin = bin, M = M)
 #' @import data.table
 #' @import traveltimeHMM
 #' @export

@@ -18,9 +18,7 @@ traveltimeCLT(
 
 \item{rules}{Need to represent a list containing, start, end, days and tag for each timebin of the dataset (see example).}
 
-\item{obj.traveltime}{Object coming from the function traveltimeCLT}
-
-\item{data.test}{Test set.}
+\item{data.timebins}{A vector of strings that represent the different time-bins of the dataset.}
 }
 \description{
 This function allows to calculate travel time estimation confidence intervals on the test set.

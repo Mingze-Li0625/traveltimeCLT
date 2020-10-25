@@ -2,22 +2,13 @@
 % Please edit documentation in R/Numerical_residuals.R
 \name{numerical_res}
 \alias{numerical_res}
-\title{Travel time estimation modeling using Central Limit Theorem}
+\title{This function allows to calculate: MAREgeo, RMSE, MAE, ME, MAPE, empirical.cov, PI.length, PI.rel.length}
 \usage{
 numerical_res(tt, est, sym.q)
 }
-\arguments{
-\item{obj.traveltime}{Object coming from the function traveltimeCLT}
-
-\item{data.test}{Test set.}
-
-\item{bin}{Allows to select a specific timebin from the dataset.}
-
-\item{rules}{Need to represent a list containing, start, end, days and tag for each timebin of the dataset (see example).}
-}
 \description{
-This function allows to calculate travel time estimation confidence intervals on the test set.
+This function allows to calculate: MAREgeo, RMSE, MAE, ME, MAPE, empirical.cov, PI.length, PI.rel.length
 }
 \examples{
-predict.traveltimeCLT(obj.traveltime = traveltimeCLT, data.test = test, bin = "MR", rules = list(list(start='6:30', end= '9:00', days = 0:6, tag='MR'),list(start='15:00', end= '18:00', days = 0:6, tag='ER')))
+numerical_res(obstt, tt, sd * qnorm(0.975) traveltimeCLT_obj$variance)
 }

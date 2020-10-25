@@ -2,22 +2,20 @@
 % Please edit documentation in R/Sample_data.R
 \name{sample_data}
 \alias{sample_data}
-\title{Travel time estimation modeling using Central Limit Theorem}
+\title{Sampling train dataset according to input time-bin.}
 \usage{
 sample_data(data.train = NULL, bin = NULL, M = NULL)
 }
 \arguments{
-\item{bin}{Allows to select a specific timebin from the dataset.}
+\item{data.train}{Transformed train dataset coming from the function Create_graph}
 
-\item{obj.traveltime}{Object coming from the function traveltimeCLT}
+\item{bin}{Allows to select a specific time-bin from the dataset.}
 
-\item{data.test}{Test set.}
-
-\item{rules}{Need to represent a list containing, start, end, days and tag for each timebin of the dataset (see example).}
+\item{M}{The number of samples to use from the train set. It is usefull especially when applying the travel time estimation algorithm on a specific time-bin.}
 }
 \description{
-This function allows to calculate travel time estimation confidence intervals on the test set.
+Sampling train dataset according to input time-bin.
 }
 \examples{
-predict.traveltimeCLT(obj.traveltime = traveltimeCLT, data.test = test, bin = "MR", rules = list(list(start='6:30', end= '9:00', days = 0:6, tag='MR'),list(start='15:00', end= '18:00', days = 0:6, tag='ER')))
+sample_data(data.train = graph_obj$data.train, bin = bin, M = M)
 }

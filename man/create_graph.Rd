@@ -2,22 +2,20 @@
 % Please edit documentation in R/Create_graph.R
 \name{create_graph}
 \alias{create_graph}
-\title{Travel time estimation modeling using Central Limit Theorem}
+\title{This function allows to create the graph of the network and run the algorithm on the train set to get the mean of the autocorrelation and the mean of the residuals.}
 \usage{
 create_graph(data.train = NULL, L = NULL, data.timebins = NULL)
 }
 \arguments{
-\item{obj.traveltime}{Object coming from the function traveltimeCLT}
+\item{data.train}{Train dataset}
 
-\item{data.test}{Test set.}
+\item{L}{A parameter allowing to remove edges that have not enough observations in the train set.}
 
-\item{bin}{Allows to select a specific timebin from the dataset.}
-
-\item{rules}{Need to represent a list containing, start, end, days and tag for each timebin of the dataset (see example).}
+\item{data.timebins}{A vector of strings that represent the different time-bins of the dataset.}
 }
 \description{
-This function allows to calculate travel time estimation confidence intervals on the test set.
+This function allows to create the graph of the network and run the algorithm on the train set to get the mean of the autocorrelation and the mean of the residuals.
 }
 \examples{
-predict.traveltimeCLT(obj.traveltime = traveltimeCLT, data.test = test, bin = "MR", rules = list(list(start='6:30', end= '9:00', days = 0:6, tag='MR'),list(start='15:00', end= '18:00', days = 0:6, tag='ER')))
+create_graph(data.train = data,train, L = L, data.timebins = data.timebins)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/Algorithm.R
 \name{param_zeta}
 \alias{param_zeta}
-\title{Travel time estimation modeling using Central Limit Theorem}
+\title{This function allows to calculate travel time estimation confidence intervals on the test set.}
 \usage{
 param_zeta(
   t0,
@@ -15,22 +15,9 @@ param_zeta(
   graph.stat.full = NULL
 )
 }
-\arguments{
-\item{rules}{A list containing, start, end, days and tag for each timebin of the dataset (see example).}
-
-\item{data.train}{A dataframe that will be used to construct the graph.}
-
-\item{L}{A parameter allowing to remove edges that have not enough observations in the train set.}
-
-\item{data.timebins}{A vector of strings that represent the different timebins of the dataset.}
-
-\item{M}{The number of samples to use from the train set. It is usefull especially when applying the travel time estimation algorithm on a specific time-bin.}
-
-\item{bin}{Sample the dataset by a specific time-bin.}
-}
 \description{
-This function allows to create the graph of the network and run the algorithm on the train set to get the mean of the autocorrelation and the mean of the residuals.
+This function allows to calculate travel time estimation confidence intervals on the test set.
 }
 \examples{
-traveltimeCLT(data.train = train, M = 1000, L = 2, bin = "MR", rules = list(list(start='6:30', end= '9:00', days = 0:6, tag='MR'),list(start='15:00', end= '18:00', days = 0:6, tag='ER'), data.timebins = c("MR", "ER", "Other")))
+param_zeta(time[1], rho_obj$rho, linkId.from, linkId.to, length, rules = rules, graph.stat.full = graph_obj$graph.stat.full)
 }

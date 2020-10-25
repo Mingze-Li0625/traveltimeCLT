@@ -2,22 +2,26 @@
 % Please edit documentation in R/Get_rho.R
 \name{get_rho}
 \alias{get_rho}
-\title{Travel time estimation modeling using Central Limit Theorem}
+\title{Calculate mean of auto-correlation
+The algorithm only keeps trips ("trips") that have more than 10 ijk links.
+On these links, we use a function called "get rho" allowing to calculate the mean of
+the auto-correlation of the speed with a lag up to 5 for each trip.
+If desired, the function also allows calculation specifically for AM or PM timebins.}
 \usage{
 get_rho(tt = NULL, xx = NULL)
 }
 \arguments{
-\item{obj.traveltime}{Object coming from the function traveltimeCLT}
+\item{tt}{Train dataset sampled according to time-bin.}
 
-\item{data.test}{Test set.}
-
-\item{bin}{Allows to select a specific timebin from the dataset.}
-
-\item{rules}{Need to represent a list containing, start, end, days and tag for each timebin of the dataset (see example).}
+\item{xx}{Trips that have more than 10 edges inside the train dataset sampled.}
 }
 \description{
-This function allows to calculate travel time estimation confidence intervals on the test set.
+Calculate mean of auto-correlation
+The algorithm only keeps trips ("trips") that have more than 10 ijk links.
+On these links, we use a function called "get rho" allowing to calculate the mean of
+the auto-correlation of the speed with a lag up to 5 for each trip.
+If desired, the function also allows calculation specifically for AM or PM timebins.
 }
 \examples{
-predict.traveltimeCLT(obj.traveltime = traveltimeCLT, data.test = test, bin = "MR", rules = list(list(start='6:30', end= '9:00', days = 0:6, tag='MR'),list(start='15:00', end= '18:00', days = 0:6, tag='ER')))
+get_rho(tt = samp_obj, xx = samp_o)
 }
