@@ -4,11 +4,11 @@
 
 The package is still under development in the Alpha stage.
 
-Install from [GitHub](https://github.com/AdrienHdz/SUMO_Travel_time_estimation/traveltimeCLT) with:
+Install from [GitHub](https://github.com/AdrienHdz/traveltimeCLT) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("AdrienHdz/SUMO_Travel_time_estimation/traveltimeCLT")
+devtools::install_github("AdrienHdz/traveltimeCLT")
 ```
 
 ## Example
