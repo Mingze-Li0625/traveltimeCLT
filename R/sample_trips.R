@@ -24,8 +24,8 @@ sample_trips <- function(data, nsamples = 100L, min.links= NULL){
         samp = aux[sample.int(length(aux), nsamples)]
     }else{
         aux = tapply(data$tripID, data$tripID, FUN = length)
-        a = which(aux >= min.link)
-        samp = aux[a[sample.int(length(a), nsamples)]]
+        a = which(aux >= min.links)
+        samp = as.numeric(names(a[sample.int(length(a),nsamples)]))
     }
     invisible(samp)
 }
