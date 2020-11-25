@@ -17,8 +17,10 @@
 #' @export
 from_to_format <- function(data){
     ## Setting the graph
-    data[, linkID.from := linkID, by = trip]
-    data[, linkID.to := shift(linkID, type = 'lead'), by = tripID]
-    data[, N:=.N, by =list(linkID.from, linkID.to, timeBin) ]
-    data
+    dt = data
+    dt[, linkID.from := linkID, by = tripID]
+    dt[, linkID.to := shift(linkID, type = 'lead'), by = tripID]
+    dt[, N:=.N, by =list(linkID.from, linkID.to, timeBin) ]
+
+    dt
 }

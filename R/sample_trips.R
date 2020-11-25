@@ -3,7 +3,7 @@
 #' \code{sample_trips} samples a random set of trips from \code{data}.
 #'
 #' @param data A data frame of trips and their road level travel information, formated as \code{trips}, see \code{trips} or \code{View(data(trips))}.
-#' @param nsample as scalar representing the number of trips to sample. Default is 100.
+#' @param nsamples as scalar representing the number of trips to sample. Default is 100.
 #' @param min.links as minimum number of links in each sampled trip.
 #'
 #' @details NULL

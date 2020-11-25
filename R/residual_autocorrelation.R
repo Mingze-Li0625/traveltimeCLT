@@ -17,10 +17,13 @@
 #' @import data.table
 #' @export
 residual_autocorrelation<-function(data, network_parameters, lag=1L, nsamples=500L){
+    if(lag == 0)
+        return(list(lag=0, average_correlation = 1))
+    
     if(!is.null(nsamples)){
         samp = sample_trips(data, nsamples, min.links = lag + 1)
         dt = from_to_format(data[tripID %in% samp])
-    }else dt = data
+    }else  dt = from_to_format(data)
     
     train = merge(dt, network_parameters,
                   all.x = TRUE,
@@ -32,7 +35,7 @@ residual_autocorrelation<-function(data, network_parameters, lag=1L, nsamples=50
                                            plot=FALSE,
                                            lag.max=lag,
                                            demean=TRUE)$acf)), tripID]
-    rho[lag != 0, .(average_correlation = mean(correlation, na.rm = TRUE)), lag]
+    rho[, .(average_correlation = mean(correlation, na.rm = TRUE)), lag]
 }
 
 
