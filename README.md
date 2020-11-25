@@ -40,7 +40,7 @@ head(trips)
 Splittig data into train and test sets.
 
 ``` r
-est_trips = sample_trips(trips, 10)
+test_trips = sample_trips(trips, 10)
 train = trips[!trips$tripID %in% test_trips,]
 test =  trips[trips$tripID %in% test_trips,]
 ```
