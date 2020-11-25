@@ -5,16 +5,7 @@ Authors@R: c(
     person(given = "Mohamad",
            family = "Elmasri",
            role = c("aut", "cre"),
-           email = "elmasri.m@gmail.com"),
-    person(given = "Aurelie",
-           family = "Labbe",
-           role = "edt"),
-    person(given = "Denis",
-           family = "Larocque",
-           role = "edt"),
-    person(given = "Laurent",
-           family = "Charlin",
-           role = "edt"),
+           email = "elmasri.m@use.startmail.com"),
     person(given = "Adrien",
            family = "Hernandez",
            role = "ctb")
@@ -28,7 +19,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1.9000
 Imports:
     data.table,
-    traveltimeHMM
-remotes: melmasri/traveltimeHMM
+remotes: melmasri/traveltimeCLT
 Depends: 
     R (>= 2.10)

@@ -21,6 +21,5 @@ from_to_format <- function(data){
     dt[, linkID.from := linkID, by = tripID]
     dt[, linkID.to := shift(linkID, type = 'lead'), by = tripID]
     dt[, N:=.N, by =list(linkID.from, linkID.to, timeBin) ]
-
     dt
 }

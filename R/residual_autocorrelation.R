@@ -6,12 +6,11 @@
 #'
 #' @param data Train dataset sampled according to time-bin.
 #' @param network_parameters Trips that have more than 10 edges inside the train dataset sampled.
-#' @param lag
-#' @param nsamples
+#' @param lag maximum lag at which to calculate the acf.  Default is 1.
+#' @param nsamples number of random trip to sample for parameter estimation. Default is 500
 #' 
 #' @examples
 #' \dontrun{
-#'
 #'
 #' }
 #' @import data.table
@@ -24,10 +23,11 @@ residual_autocorrelation<-function(data, network_parameters, lag=1L, nsamples=50
         samp = sample_trips(data, nsamples, min.links = lag + 1)
         dt = from_to_format(data[tripID %in% samp])
     }else  dt = from_to_format(data)
-    
-    train = merge(dt, network_parameters,
-                  all.x = TRUE,
-                  by = c('linkID.from', 'linkID.to', 'timeBin'))[order(tripID,time)]
+
+    train = merge(dt,dt[ ,  network_parameters[[paste0(linkID.from[1],'.', linkID.to[1],'.', timeBin[1])]],
+                        by = list(linkID.from, linkID.to, timeBin)]
+                 ,all.x = TRUE,
+                  by = c('linkID.from', 'linkID.to', 'timeBin'))[order(tripID,entry_time)]
     
     ## not sure if we need to demain
     rho = train[, .(tripID[1], lag = 0:lag,
@@ -37,5 +37,4 @@ residual_autocorrelation<-function(data, network_parameters, lag=1L, nsamples=50
                                            demean=TRUE)$acf)), tripID]
     rho[, .(average_correlation = mean(correlation, na.rm = TRUE)), lag]
 }
-
 

@@ -8,32 +8,54 @@
 #' @param timebin_rules is a list containing, start, end, days and tag for each timebin of the dataset (see example).
 
 #' @examples
-#' predict.traveltimeCLT(obj.traveltime = traveltimeCLT, data.test = test, bin = "MR", rules = list(list(start='6:30', end= '9:00', days = 0:6, tag='MR'),list(start='15:00', end= '18:00', days = 0:6, tag='ER')))
+#' 
 #' @import data.table
-#' @import traveltimeHMM
 #' @export
+traveltimeCLT <- function(data, lag = 1L, estimate = c('both', 'mean-only'),
+                          nsamples=500L,
+                          min.links=5L,
+                          timebin_rules = NULL){
 
-traveltimeCLT <- function(data, lag = 1L, nsamples=500L, min.links=5L, timebin_rules = NULL){
-
+    estimate <- tryCatch(match.arg(estimate),error=function(cond){
+      stop("Parameter 'estimate' should 'both', for estimating the mean and variance, or 'mean-only'")
+    })
+    
+    
     ## convert to a data.table format
     if(!'data.table' %in% class(data))  data = data.table(data)
 
+    numobs = tapply(data$tripID, data$tripID, length)
+    if(min(numobs) < lag +1)
+        warning(paste(sum(numobs < lag+1),
+                      'trips have less than',
+                      lag,  'observation, and will not be used to estimate autocorrelations, or residual variance parameters'))
+    
     ## estimate link mean and variance per time bin
     network_params  <- link_mean_variance(data, L = min.links)
+
+    if(grepl('both', estimate)){
+        ## estimate auto-correlation parameters
+        rho <- residual_autocorrelation(data, network_params, lag = lag, nsamples = nsamples)
     
-    ## estimate auto-correlation parameters
-    rho <- residual_autocorrelation(data, network_params, lag = lag, nsamples = nsamples)
+        ## estimate residual variance
+        v = residual_variance(data, network_params, rho = rho$average_correlation,
+                              nsamples = nsamples, timebin_rules = timebin_rules)
+    }else{
+        rho <- v <-NULL
+    }
     
-    ## estimate residual variance
-    v = residual_variance(data, network_params, rho = rho$average_correlation, nsamples = nsamples)
-    
-       
     ## returning variables
     traveltimeCLT_obj <- list(network_parameters = network_params,
                               rho = rho,
-                              residual_variance = v
+                              residual_variance = v,
+                              nsamples = nsamples,
+                              min.links = min.links,
+                              lag = lag,
+                              timebin_rules = timebin_rules,
+                              estimate  = estimate
                               )
     class(traveltimeCLT_obj) = append(class(traveltimeCLT_obj), "traveltimeCLT", after=0)
     
     invisible(traveltimeCLT_obj)
 }
+

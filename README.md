@@ -2,18 +2,18 @@
 
 ## Installation
 
-The package is still under development in the Alpha stage.
+The package is still under development. 
 
-Install from [GitHub](https://github.com/AdrienHdz/traveltimeCLT) with:
+Install from [GitHub](https://github.com/melmasri/traveltimeCLT) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("AdrienHdz/traveltimeCLT")
+devtools::install_github("melmasri/traveltimeCLT")
 ```
 
 ## Example
 
-This package includes a small data set (`tripset`) that aggregates
+This package includes a small data set (`trips`) that aggregates
 map-matched anonymized mobile phone GPS data collected in Quebec city in
 2014 using the Mon Trajet smartphone application developed by [Brisk
 Synergies Inc](https://brisksynergies.com/). The precise duration of the
@@ -23,68 +23,46 @@ View the data with:
 
 ``` r
 library(traveltimeCLT)
-library(traveltimeHMM)
 library(data.table)
 
 data(trips)
 head(trips)
-trip	time	timeBins	tt	logspeed	length	linkId
-<int>	<chr>	<chr>	<dbl>	<dbl>	<dbl>	<int>
-15	2014-05-05 07:32:41.000	MorningRush	8.00	1.801	48.422	24088
-15	2014-05-05 07:32:50.000	MorningRush	64.49	0.147	74.703	23470
-15	2014-05-05 07:33:54.000	MorningRush	17.34	2.621	238.410	34576
-15	2014-05-05 07:34:11.000	MorningRush	4.54	2.875	80.557	34586
-15	2014-05-05 07:34:16.000	MorningRush	3.03	2.905	55.259	34583
-15	2014-05-05 07:34:19.000	MorningRush	8.56	2.810	142.211	6704
+ tripID linkID timeBin     speed duration_secs distance_meters            entry_time 
+1   2700  10469 Weekday  5.431914     13.000000        70.61488  2014-04-28 06:07:27 
+2   2700  10444 Weekday  9.219505     18.927792       174.50487  2014-04-28 06:07:41 
+3   2700  10460 Weekday  9.052796      8.589937        77.76295  2014-04-28 06:07:58 
+4   2700  10462 Weekday  6.850282     14.619859       100.15015  2014-04-28 06:08:07 
+5   2700  10512 Weekday  6.075674      5.071986        30.81574  2014-04-28 06:08:21 
+6   2700   5890 Weekday 10.771731     31.585355       340.22893  2014-04-28 06:08:26 
 
 ```
-Transforming the variables
 
-``` r
-trips <- as.data.table(trips)
-trips$speed <- exp(trips$logspeed)
-```
 Splittig data into train and test sets.
 
 ``` r
-test.trips <- create_test_trips(M = 500, trips, min.n = 1)
-test = trips[trip %in% test.trips]
-train = trips[!trip %in% test.trips]
-
+est_trips = sample_trips(trips, 10)
+train = trips[!trips$tripID %in% test_trips,]
+test =  trips[trips$tripID %in% test_trips,]
 ```
-Creating rules and time-bins
+Model fitting
 
 ``` r
-myrules = list(
-  list(start='6:30', end= '9:00', days = 0:6, tag='MorningRush'),
-  list(start='15:00', end= '18:00', days = 0:6, tag='EveningRush'))
-
-mytimebins = c("MorningRush", "EveningRush", "Other")
-```
-
-Fit the model using the following code:
-
-``` r
-ttCLTmodel <- traveltimeCLT(data.train = train, 
-			    M = 1000,
-			    L = 2,
-			    bin = "MorningRush",
-			    rules = myrules,
-			    data.timebins = mytimebins)
+fit <- traveltimeCLT(train, lag = 1)
 ```
 To predict on the test set and get estimations:
 
 ``` r
-ttCLTresults <- predict_traveltimeCLT(obj.traveltime = ttCLTmodel,
-				      data.test = test,
-				      bin = "MorningRush",
-				      rules = myrules)
+predict(fit, test)
 ```
+
+## Bugs
+
+This is a work in progress. For bugs and features, please refer to
+[here](https://github.com/melmasri/traveltimeCLT/issues).
 
 
 ## References
 
-Elmasri, M., Labbe, A., Larocque, D., Charlin, L,
-2020. “Prediction intervals for travel time on transportation networks”.
-
+Elmasri, M., Labbe, A., Larocque, D., Charlin, L,2020. “Predictive inference for travel time on transportation networks”.
 <https://arxiv.org/abs/2004.11292>
+

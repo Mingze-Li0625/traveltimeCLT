@@ -1,6 +1,5 @@
 #' \code{predict.traveltimeCLT.trip_specific} returns the predicted mean and variance of travel time for a specific route and start time.
-
-#' 
+#'
 #' @param starttime a \code{POSIXlt} value representing the start time of the trip.
 #' @param route a vector of links in the order to be traveled.
 #' @param distance a vector of distances to be traveled on each on the links in \code{route}.
@@ -88,10 +87,16 @@ predict.traveltimeCLT.trip_specific <- function(starttime, route, distance,
             tbin = time_bins(starttime + ETA)
         }
     }
+
     if(finaly.only){
-        list(ETA = sum(mean.seq), variance = if(grepl('both', pred.type)) sum(variance.seq) else NULL)
+        if(grepl('both', pred.type))
+            list(ETA = sum(mean.seq), variance = sum(variance.seq))
+        else list(ETA = sum(mean.seq))
     }else{
-        list(ETA = sum(mean.seq), variance = if(grel('both', pred.type)) cumsum(variance.seq) else NULL)
+        if(grepl('both', pred.type))
+            list(ETA = sum(mean.seq), variance = cumsum(variance.seq))
+        else
+            list(ETA = sum(mean.seq))
     }
 
 }

@@ -1,7 +1,8 @@
 #' This function allows to create the graph of the network and run the algorithm on the train set to get the mean of the autocorrelation and the mean of the residuals.
 #' @param data A data frame of trips and their road level travel information, formated as \code{trips}, see \code{trips} or \code{View(data(trips))}.
 #' @param L minimum number of observation to estimate (and not impute) parameters. Default (\code{L=5}).
-
+#' @param bins a vector of predefined naming for time bins. Default \code{unique(data$timeBin)}.
+#' 
 #' @details returns a data frame with columns \code{(linkID.from, linkID.to, timeBin, mean, sd, imputed_mean, imputed_sd)} representing the mean and as used for each unit, while \code{imputed_mean} and \code{imputed_sd} indicate whether the calculated quantity is imputed from time bin estimates, or calculated from observed data.
 #' @examples
 #'#' @examples
@@ -11,43 +12,50 @@
 #' }
 #' @import data.table
 #' @export
-link_mean_variance <- function(data, L = 5L){
-    train = data
-    from_to_format(train)
-    train[, speed :=exp(logspeed)]
-    ## Calculating the mean and  variance per (linkID.from, linkID.to, timeBin)
-    graph.stat = train[, .(mu = mean(1/speed),  sd2 = var(1/speed), N=N[1]), by = list(linkID.from, linkID.to, timeBin)]
+link_mean_variance <- function(data, L = 5L, bins = unique(data$timeBin)){
+    train = from_to_format(data)
     
-    ## We create the structure of the graph network
-    bins = unique(train$timeBin)
-    full.graph = graph.stat[, .(timeBin = bins) ,by = list(linkID.from, linkID.to)]
+    ## linkID.from X linkID.to X tbins
+    graph = train[, .(timeBin = bins) ,by = list(linkID.from, linkID.to)]
+    ## adding NA, NA, timeBin
+    graph = rbindlist(list(graph,data.frame(linkID.from = NA, linkID.to = NA, timeBin = bins)))
 
-    ## merging mu and sd2 calculated above to the structure of our graph network
-    graph.stat = merge(full.graph, graph.stat, by= c('linkID.from', 'linkID.to', 'timeBin'), all.x = TRUE)
-    graph.stat$N[is.na(graph.stat$N)]<-0
+    ## Adding ID, NA, timeBin
+    a = train[, NA, list(linkID.from, timeBin)]
+    a[, linkID.to:=V1]; a[, V1 := NULL]
+    graph = rbindlist(list(graph, a[, .(linkID.from, linkID.to, timeBin)]))
+    
+    ## Calculating the mean and  variance per (linkID.from, linkID.to, timeBin)
+    from.to.tb = train[, .(mu = mean(1/speed),  sd2 = var(1/speed), N= .N),
+                       by = list(linkID.from, linkID.to, timeBin)]
+
 
     ## mu.from.tb and sd2.from.tb: We calculate the mean and the variance of the speed
     ## for all the times when the ik link (linkID.from and timeBins pairs
-    graph.stat.from.tb = train[, .(mu = mean(1/speed),
-                                   sd2 = var(1/speed), N= .N),
-                               by = list(linkID.from, timeBin)]
+    from.tb = train[, .(mu = mean(1/speed), sd2 = var(1/speed), N= .N),
+                    by = list(linkID.from, timeBin)]
 
     ## mu.tb and sd2.tb: We calculate the mean and the variance of the speed for each timebins.
-    graph.stat.tb = train[, .(mu = mean(1/speed),
-                              sd2 = var(1/speed), N= .N),
-                          by = list(timeBin)]
+    tb = train[, .(mu = mean(1/speed), sd2 = var(1/speed), N= .N),
+               by = list(timeBin)]
     
-    ## we combine the three in the same data frame
-    graph.stat.full =  merge(graph.stat,
-                             graph.stat.from.tb[N>L, .(mu.from.tb = mu,
-                                                       sd2.from.tb = sd2,
-                                                       linkID.from, timeBin)],
-                             all.x = TRUE,
-                             by.x=c('linkID.from', 'timeBin'),
-                             by.y = c('linkID.from', 'timeBin'))
+    
+    ## merging mu and sd2 calculated above to the structure of our graph network
+    graph.stat = merge(graph, from.to.tb[N>=L],
+                       by= c('linkID.from', 'linkID.to', 'timeBin'), all.x = TRUE)
+    graph.stat$N[is.na(graph.stat$N)]<-0
 
-    graph.stat.full =  merge(graph.stat.full,
-                             graph.stat.tb[N>L, .(mu.tb = mu, sd2.tb = sd2, timeBin)],
+    ## we combine the three in the same data frame
+    graph.stat =  merge(graph.stat,
+                        from.tb[N>=L, .(mu.from.tb = mu,
+                                        sd2.from.tb = sd2,
+                                        linkID.from, timeBin)],
+                        all.x = TRUE,
+                        by.x=c('linkID.from', 'timeBin'),
+                        by.y = c('linkID.from', 'timeBin'))
+
+    graph.stat.full =  merge(graph.stat,
+                             tb[N>=L, .(mu.tb = mu, sd2.tb = sd2, timeBin)],
                              all.x = TRUE, by.x=c('timeBin'), by.y = c('timeBin'))
     
 
@@ -59,19 +67,31 @@ link_mean_variance <- function(data, L = 5L){
 
     ## imputing average based on time bin average if missing
     graph.stat.full[, muspeed := ifelse(is.na(mu), ifelse(is.na(mu.from.tb), mu.tb, mu.from.tb), mu)]
-    graph.stat.full[,  imputed_mean := ifelse(muspeed== mu, FALSE, TRUE )]
+    graph.stat.full[,  imputed_mu := ifelse(is.na(mu), TRUE, FALSE)]
     ## imputing sd based on time bin average if missing
     graph.stat.full[, sdspeed := ifelse(is.na(sd2), ifelse(is.na(sd2.from.tb), sd2.tb, sd2.from.tb), sd2)]
-    graph.stat.full[, imputed_sd := ifelse(sdspeed == sd2  & !is.na(sd2) , FALSE, TRUE)]
+    graph.stat.full[, imputed_sd2 := ifelse(is.na(sd2) , TRUE, FALSE)]
 
+    ## convert to a hashed environment
+    graph.stat.full[, k:=paste0(linkID.from,'.', linkID.to,'.', timeBin)]
+    
+    net= new.env(hash=TRUE, size = nrow(graph.stat.full))
 
+    graph.stat.full[ , assign(k[1], list(mean = muspeed[1],
+                                      sd = sqrt(sdspeed[1]),
+                                      imputed_mean = imputed_mu[1],
+                                      imputed_sd = imputed_sd2[1]), envir = net),
+                    list(linkID.from, linkID.to, timeBin)]
+
+    invisible(net)
     ## shortining the output
-    invisible( graph.stat.full[,.(linkID.from,
-                          linkID.to,
-                          timeBin,
-                          mean = muspeed,
-                          sd = sqrt(sdspeed),
-                          imputed_mean,
-                          imputed_sd)]
-              )
+    ## invisible( graph.stat.full[,.(linkID.from,
+    ##                       linkID.to,
+    ##                       timeBin,
+    ##                       mean = muspeed,
+    ##                       sd = sqrt(sdspeed),
+    ##                       imputed_mean,
+    ##                       imputed_sd)]
+    ##           )
+
 }
