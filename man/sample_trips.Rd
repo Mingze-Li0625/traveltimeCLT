@@ -2,19 +2,19 @@
 % Please edit documentation in R/sample_trips.R
 \name{sample_trips}
 \alias{sample_trips}
-\title{Sampling a random set of trips from a data set}
+\title{Sampling a random set of trips from the data}
 \usage{
 sample_trips(data, nsamples = 100L, min.links = NULL)
 }
 \arguments{
-\item{data}{A data frame of trips and their road level travel information, formated as \code{trips}, see \code{trips} or \code{View(data(trips))}.}
+\item{data}{A data frame of trips and their road level travel information, formatted as \code{trips}, see \code{trips} or \code{data(trips); View(trips)}.}
 
-\item{nsamples}{as scalar representing the number of trips to sample. Default is 100.}
+\item{nsamples}{The number of trips to sample. Default is 100.}
 
-\item{min.links}{as minimum number of links in each sampled trip.}
+\item{min.links}{The minimum number of links in each of the sampled trip.}
 }
 \value{
-\code{sample_trips} return a vector of \code{tripID}'s of the samples trips.
+Returns a vector of \code{tripID}'s of the sampled trips. Those trips are to removed from the data, it is up to the user to do so.
 }
 \description{
 \code{sample_trips} samples a random set of trips from \code{data}.
@@ -22,8 +22,8 @@ sample_trips(data, nsamples = 100L, min.links = NULL)
 \examples{
 \dontrun{
 data(trips)
-# sampling a 100 random trips with minium of 10 links each.
+# sampling a 100 random trips with minimum of 10 links each.
 index = sample_trips(trips, min.links = 10)
-trips[trips$tripID \%in\% index, ]
+trips[trips$tripID \%in\% index, ]    # sub-setting based on sampled trips
 }
 }

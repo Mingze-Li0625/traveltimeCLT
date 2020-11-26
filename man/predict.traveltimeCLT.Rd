@@ -2,29 +2,27 @@
 % Please edit documentation in R/predict.R
 \name{predict.traveltimeCLT}
 \alias{predict.traveltimeCLT}
-\title{This function allows to predict the travel time estimation on the test set.}
+\title{Predict travel time}
 \usage{
-\method{predict}{traveltimeCLT}(
-  object,
-  newdata,
-  pred.interval = c("trip-specific", "population", "none"),
-  level = 0.95
-)
+\method{predict}{traveltimeCLT}(object, newdata, level = 0.95)
 }
 \arguments{
-\item{object}{an output of \code{traveltimeCLT}, of class \code{traveltimeCLT}.}
+\item{object}{An output of \code{traveltimeCLT}, of class \code{traveltimeCLT}.}
 
-\item{newdata}{a data frame of new trips.}
+\item{newdata}{A data frame of new trips and their road level travel information, formatted as \code{trips}, see \code{trips} or \code{data(trips); View(trips)}.}
 
-\item{level}{Tolerance levels.}
-
-\item{pred.intervals}{Type of prediction itervals, \code{trip-specific}, \code{population}, or \code{none}.}
+\item{level}{Significance levels.}
+}
+\value{
+Returns a data fram that inlcudes the ETA (and optionally the trips variance), with lower and upper prediction intervals (optional), for each trip in the \code{newdata}.
 }
 \description{
-This function allows to predict the travel time estimation on the test set.
+\code{predict.traveltimeCLT} predicts expected travel time (ETA) and a prediction interval based on the \code{trip-specific} and \code{population} methods.
+}
+\details{
+Both the \code{trip-specific} and \code{population} prediction intervals are Gaussian-based.
 }
 \examples{
 \dontrun{
-
 }
 }

@@ -2,33 +2,38 @@
 % Please edit documentation in R/predict.traveltimeCLT.trip_specific.R
 \name{predict.traveltimeCLT.trip_specific}
 \alias{predict.traveltimeCLT.trip_specific}
-\title{\code{predict.traveltimeCLT.trip_specific} returns the predicted mean and variance of travel time for a specific route and start time.}
+\title{Predict trip-specific travel time}
 \usage{
 \method{predict}{traveltimeCLT.trip_specific}(
   starttime,
   route,
   distance,
-  rho = 1,
   network_parameters,
+  rho = 1,
   finaly.only = TRUE,
   timebin_rules = NULL,
   pred.type = c("both", "mean-only")
 )
 }
 \arguments{
-\item{starttime}{a \code{POSIXlt} value representing the start time of the trip.}
+\item{starttime}{A \code{POSIXlt} value representing the start time of the trip.}
 
-\item{route}{a vector of links in the order to be traveled.}
+\item{route}{Vector of links in the order of  travel.}
 
-\item{distance}{a vector of distances to be traveled on each on the links in \code{route}.}
+\item{distance}{Vector of distances to be traveled on each on the links in \code{route}.}
 
-\item{rho}{a vector of auto-correlation in the order of lag, starting at lag 0.}
+\item{network_parameters}{An output of \code{link_mean_variance}, see \code{?link_mean_variance}.}
 
-\item{network_parameters}{an output of \code{link_mean_variance}, see \code{?link_mean_variance}.}
+\item{rho}{Victor of auto-correlation in the order of lag, starting at lag 0 for no correlation.}
 
-\item{timebin_rules}{a \code{list} of time bin rules to be passed to \code{rules2timebins}, see \code{?rules2timebins}.}
+\item{timebin_rules}{A \code{list} of time bin rules to be passed to \code{rules2timebins}, see \code{?rules2timebins}.}
 
-\item{final.only}{a logical indicating whether to return a sequence of means and standard deviation, in the order of \code{route}, or only the final ETA and standard deviation values. Default \code{final.only=TRUE}.}
+\item{pred.type}{\code{'both'} to predict the mean and variance of travel time and \code{'mean-only'} for the mean. Default \code{'both'}.}
+
+\item{final.only}{Logical indicating whether to return a sequence of means and standard deviations, in the order of \code{route}, or only the final ETA and standard deviation. Default \code{final.only=TRUE}.}
+}
+\value{
+Returns a list of predictions.
 }
 \description{
 \code{predict.traveltimeCLT.trip_specific} returns the predicted mean and variance of travel time for a specific route and start time.

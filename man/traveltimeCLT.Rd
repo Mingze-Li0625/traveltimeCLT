@@ -6,8 +6,9 @@
 \usage{
 traveltimeCLT(
   data,
-  lag = 1L,
+  model = c("trip-specific", "population"),
   estimate = c("both", "mean-only"),
+  lag = 1L,
   nsamples = 500L,
   min.links = 5L,
   timebin_rules = NULL
@@ -16,16 +17,26 @@ traveltimeCLT(
 \arguments{
 \item{data}{A data frame of trips and their road level travel information, formated as \code{trips}, see \code{trips} or \code{View(data(trips))}.}
 
-\item{lag}{as the highest order of residual autocorrelations to estimate, see \code{?residual_autocorrelation}. (Default \code{lag=1}).}
+\item{model}{Specifies whether the \code{trip-specific} or \code{population} models should be used.}
 
-\item{nsamples}{the number of observations sampled to estimate parameters. (Default \code{nsamples=500}).}
+\item{estimate}{Specifies whether to estimate \code{both} the mean and variance or \code{mean-only}. Only applied with \code{model=trip-specific}.}
 
-\item{min.links}{as the minimum number of links in trips used to estimate parameters.}
+\item{lag}{Maximum lag at which to calculate the autocorrelations. Default is 1 for the first order-autocorrelations.}
+
+\item{nsamples}{The number of trips to sample for parameter estimation.}
+
+\item{min.links}{The minimum number of links in each of the sampled trip.}
 
 \item{timebin_rules}{is a list containing, start, end, days and tag for each timebin of the dataset (see example).}
 }
+\value{
+
+}
 \description{
 This function allows to calculate travel time estimation confidence intervals on the test set.
+}
+\details{
+
 }
 \examples{
 

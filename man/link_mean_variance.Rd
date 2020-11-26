@@ -2,27 +2,30 @@
 % Please edit documentation in R/link_mean_variance.R
 \name{link_mean_variance}
 \alias{link_mean_variance}
-\title{This function allows to create the graph of the network and run the algorithm on the train set to get the mean of the autocorrelation and the mean of the residuals.}
+\title{Estimates mean and variance of each link}
 \usage{
 link_mean_variance(data, L = 5L, bins = unique(data$timeBin))
 }
 \arguments{
-\item{data}{A data frame of trips and their road level travel information, formated as \code{trips}, see \code{trips} or \code{View(data(trips))}.}
+\item{data}{A data frame of trips and their road level travel information, formatted as \code{trips}, see \code{trips} or \code{data(trips); View(trips)}.}
 
-\item{L}{minimum number of observation to estimate (and not impute) parameters. Default (\code{L=5}).}
+\item{L}{The minimum number of observation needed to estimate (and not impute) parameters. Default (\code{L=5}). see}
 
 \item{bins}{a vector of predefined naming for time bins. Default \code{unique(data$timeBin)}.}
 }
+\value{
+Returns a hashed environment with keys as \code{paste0(linkID.from,'.', linkID.to,'.', timeBin)} and values containing \code{list(mean, sd, imputed_mean, imputed_sd)} as the mean and standard deviation of travel time for each unit, while \code{imputed_mean} and \code{imputed_sd} indicate whether the calculated quantities are imputed or calculated from observed data.
+}
 \description{
-This function allows to create the graph of the network and run the algorithm on the train set to get the mean of the autocorrelation and the mean of the residuals.
+\code{link_mean_variance} estimates the mean and variance of travel duration for each link in the data.
 }
 \details{
-returns a data frame with columns \code{(linkID.from, linkID.to, timeBin, mean, sd, imputed_mean, imputed_sd)} representing the mean and as used for each unit, while \code{imputed_mean} and \code{imputed_sd} indicate whether the calculated quantity is imputed from time bin estimates, or calculated from observed data.
+For links \code{(linkID.from, linkID.to, timeBin)} that have less than \code{L} number of observations, first they are imputed by \code{(linkID.from, timeBin)} estimates, if there at least \code{L} observations in that category, and second by \code{timeBin} estimates.
 }
 \examples{
 #' @examples
 \dontrun{
 data(trips)
-estimate_edge_parameters(trips)
+link_mean_variance(trips)
 }
 }

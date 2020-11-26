@@ -2,29 +2,29 @@
 % Please edit documentation in R/residual_variance.R
 \name{residual_variance}
 \alias{residual_variance}
-\title{Calculate mean of auto-correlation
-The algorithm only keeps trips ("trips") that have more than 10 ijk links.
-On these links, we use a function called "get rho" allowing to calculate the mean of
-the auto-correlation of the speed with a lag up to 5 for each trip.
-If desired, the function also allows calculation specifically for AM or PM timebins.}
+\title{Estimates the sample variance of the standardized travel residual}
 \usage{
 residual_variance(data, network_parameters, rho = 1L, nsamples = 500L, ...)
 }
 \arguments{
-\item{data}{Train dataset sampled according to time-bin.}
+\item{data}{A data frame of trips and their road level travel information, formatted as \code{trips}, see \code{trips} or \code{data(trips); View(trips)}.}
 
-\item{network_parameters}{Trips that have more than 10 edges inside the train dataset sampled.}
+\item{network_parameters}{An output of \code{link_mean_variance}, see \code{?link_mean_variance}.}
 
-\item{nsamples}{number of random trip to sample for parameter estimation. Default is 500.}
+\item{nsamples}{The number of trips to sample for parameter estimation. Default is 500.}
 
-\item{lag}{maximum lag at which to calculate the acf.  Default is 1.}
+\item{...}{Extra parameters to be passed to \code{predict.traveltimeCLT.trip_specific}.}
+
+\item{lag}{Maximum lag at which to calculate the autocorrelations. Default is 1 for the first order-autocorrelations.}
+}
+\value{
+Returns the sample variance of the standardized residual.
 }
 \description{
-Calculate mean of auto-correlation
-The algorithm only keeps trips ("trips") that have more than 10 ijk links.
-On these links, we use a function called "get rho" allowing to calculate the mean of
-the auto-correlation of the speed with a lag up to 5 for each trip.
-If desired, the function also allows calculation specifically for AM or PM timebins.
+\code{residual_variance} estimate the sample variance of standardized travel residual for a set of trips.
+}
+\details{
+The function predicts 'trip-specific' mean and variance of travel time of a sample of trips, given a set of parameter estimates. With such prediction, it estimates the standardized residual and calculates its sample variance. The trip-specific method is a Gaussian-based model, therefore the estimated residual, theoretically, should be 1. Hence, a residual variance of 1.5 resembles \code{sqrt(1.5)-1 = 0.22} of unexplained variability of the model.
 }
 \examples{
 \dontrun{
