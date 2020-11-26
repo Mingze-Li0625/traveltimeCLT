@@ -1,14 +1,20 @@
-#' This function allows to create the graph of the network and run the algorithm on the train set to get the mean of the autocorrelation and the mean of the residuals.
-#' @param data A data frame of trips and their road level travel information, formated as \code{trips}, see \code{trips} or \code{View(data(trips))}.
-#' @param L minimum number of observation to estimate (and not impute) parameters. Default (\code{L=5}).
+#' Estimates mean and variance of each link
+#'
+#' \code{link_mean_variance} estimates the mean and variance of travel duration for each link in the data.
+#'
+#' @param data A data frame of trips and their road level travel information, formatted as \code{trips}, see \code{trips} or \code{data(trips); View(trips)}.
+#' @param L The minimum number of observation needed to estimate (and not impute) parameters. Default (\code{L=5}). see 
 #' @param bins a vector of predefined naming for time bins. Default \code{unique(data$timeBin)}.
+#'
+#' @details For links \code{(linkID.from, linkID.to, timeBin)} that have less than \code{L} number of observations, first they are imputed by \code{(linkID.from, timeBin)} estimates, if there at least \code{L} observations in that category, and second by \code{timeBin} estimates.
 #' 
-#' @details returns a data frame with columns \code{(linkID.from, linkID.to, timeBin, mean, sd, imputed_mean, imputed_sd)} representing the mean and as used for each unit, while \code{imputed_mean} and \code{imputed_sd} indicate whether the calculated quantity is imputed from time bin estimates, or calculated from observed data.
+#' @return Returns a hashed environment with keys as \code{paste0(linkID.from,'.', linkID.to,'.', timeBin)} and values containing \code{list(mean, sd, imputed_mean, imputed_sd)} as the mean and standard deviation of travel time for each unit, while \code{imputed_mean} and \code{imputed_sd} indicate whether the calculated quantities are imputed or calculated from observed data.
+#'
 #' @examples
 #'#' @examples
 #' \dontrun{
 #' data(trips)
-#' estimate_edge_parameters(trips)
+#' link_mean_variance(trips)
 #' }
 #' @import data.table
 #' @export

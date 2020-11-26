@@ -2,11 +2,11 @@
 #'
 #' \code{from_to_format} adjust the data to from linkID to linkID format.
 #' 
-#' @param data A data frame of trips and their road level travel information, formated as \code{trips}, see \code{trips} or \code{View(data(trips))}.
+#' @param data A data frame of trips and their road level travel information, formatted as \code{trips}, see \code{trips} or \code{data(trips); View(trips)}.
 #'
 #' @details NULL
 #'
-#' @return \code{from_to_format} returns the data frame with extra columns (linkID.from, linkID.to), and \code{N} representing the number of (i = linkID.from, j = linkID.to, k = timeBin) is present in the dataset.
+#' @return Returns a data frame with extra columns (linkID.from, linkID.to), and \code{N} representing the number of (i = linkID.from, j = linkID.to, k = timeBin) is present in the dataset.
 #' 
 #' @examples
 #' \dontrun{
@@ -21,5 +21,5 @@ from_to_format <- function(data){
     dt[, linkID.from := linkID, by = tripID]
     dt[, linkID.to := shift(linkID, type = 'lead'), by = tripID]
     dt[, N:=.N, by =list(linkID.from, linkID.to, timeBin) ]
-    dt
+    invisible(dt)
 }

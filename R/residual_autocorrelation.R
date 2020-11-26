@@ -1,14 +1,15 @@
-#' Calculate mean of auto-correlation
-#' The algorithm only keeps trips ("trips") that have more than 10 ijk links.
-#' On these links, we use a function called "get rho" allowing to calculate the mean of
-#' the auto-correlation of the speed with a lag up to 5 for each trip.
-#' If desired, the function also allows calculation specifically for AM or PM timebins.
+#' Auto-correlation of sequence travel residual
 #'
-#' @param data Train dataset sampled according to time-bin.
-#' @param network_parameters Trips that have more than 10 edges inside the train dataset sampled.
-#' @param lag maximum lag at which to calculate the acf.  Default is 1.
-#' @param nsamples number of random trip to sample for parameter estimation. Default is 500
+#' \code{residual_autocorrelation} Calculates the average autocorrelations of the residual sequence of travel time.
+#'
+#' @param data A data frame of trips and their road level travel information, formatted as \code{trips}, see \code{trips} or \code{data(trips); View(trips)}.
+#' @param network_parameters An output of \code{link_mean_variance}, see \code{?link_mean_variance}.
+#' @param lag Maximum lag at which to calculate the autocorrelations. Default is 1 for the first order-autocorrelations.
+#' @param nsamples The number of trips to sample for parameter estimation. Default is 500.
+#'
+#' @details A residual sequence is a sequences of \code{(duration_sec_i - E[duration_sec_i])/sd(duration_sec_i)} for the \code{i} links of a trip. 
 #' 
+#' @return Returns a data frame of lag order and autocorrelations estimates.
 #' @examples
 #' \dontrun{
 #'

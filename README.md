@@ -44,14 +44,16 @@ test_trips = sample_trips(trips, 10)
 train = trips[!trips$tripID %in% test_trips,]
 test =  trips[trips$tripID %in% test_trips,]
 ```
-Model fitting
-
+Fitting and predicting the `trip-specific` model, with lag 1
 ``` r
 fit <- traveltimeCLT(train, lag = 1)
+predict(fit, test)
 ```
-To predict on the test set and get estimations:
+Fitting and predicting the `populaton` model, with lag 1
+
 
 ``` r
+fit <- traveltimeCLT(train, model = 'population)
 predict(fit, test)
 ```
 

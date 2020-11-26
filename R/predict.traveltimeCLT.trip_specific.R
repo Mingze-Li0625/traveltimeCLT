@@ -1,15 +1,20 @@
+#' Predict trip-specific travel time
+#'
 #' \code{predict.traveltimeCLT.trip_specific} returns the predicted mean and variance of travel time for a specific route and start time.
 #'
-#' @param starttime a \code{POSIXlt} value representing the start time of the trip.
-#' @param route a vector of links in the order to be traveled.
-#' @param distance a vector of distances to be traveled on each on the links in \code{route}.
-#' @param rho a vector of auto-correlation in the order of lag, starting at lag 0.
-#' @param network_parameters an output of \code{link_mean_variance}, see \code{?link_mean_variance}.
-#' @param final.only a logical indicating whether to return a sequence of means and standard deviation, in the order of \code{route}, or only the final ETA and standard deviation values. Default \code{final.only=TRUE}.
-#' @param timebin_rules a \code{list} of time bin rules to be passed to \code{rules2timebins}, see \code{?rules2timebins}. 
+#' @param starttime A \code{POSIXlt} value representing the start time of the trip.
+#' @param route Vector of links in the order of  travel.
+#' @param distance Vector of distances to be traveled on each on the links in \code{route}.
+#' @param network_parameters An output of \code{link_mean_variance}, see \code{?link_mean_variance}.
+#' @param rho Victor of auto-correlation in the order of lag, starting at lag 0 for no correlation.
+#' @param final.only Logical indicating whether to return a sequence of means and standard deviations, in the order of \code{route}, or only the final ETA and standard deviation. Default \code{final.only=TRUE}.
+#' @param timebin_rules A \code{list} of time bin rules to be passed to \code{rules2timebins}, see \code{?rules2timebins}.
+#' @param pred.type \code{'both'} to predict the mean and variance of travel time and \code{'mean-only'} for the mean. Default \code{'both'}.
 #'
 #' @details NULL
 #'
+#' @return Returns a list of predictions.
+#' 
 #' @examples
 #' \dontrun{
 #'
@@ -17,8 +22,8 @@
 #' @import data.table
 #' @export
 predict.traveltimeCLT.trip_specific <- function(starttime, route, distance,
-                                                rho=1,
                                                 network_parameters,
+                                                rho=1,
                                                 finaly.only = TRUE,
                                                 timebin_rules = NULL,
                                                 pred.type = c('both', 'mean-only')){
@@ -41,9 +46,6 @@ predict.traveltimeCLT.trip_specific <- function(starttime, route, distance,
     if(length(route) != length(distance))
         stop('length(route) != length(distance)!')
     
-    if(length(rho) > length(route) & grepl('both', pred.type))
-        stop('autocorrelations cannot be larger than length(route) - 1!')
-
     if(!is.null(timebin_rules)){
         timebin_rules = list(
             list(start='6:30', end= '9:00', days = 1:5, tag='MorningRush'),
