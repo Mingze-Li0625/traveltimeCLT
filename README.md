@@ -53,7 +53,7 @@ Fitting and predicting the `populaton` model, with lag 1
 
 
 ``` r
-fit <- traveltimeCLT(train, model = 'population)
+fit <- traveltimeCLT(train, model = 'population')
 predict(fit, test)
 ```
 
