@@ -4,7 +4,7 @@
 \alias{predict.traveltimeCLT}
 \title{Predict travel time}
 \usage{
-\method{predict}{traveltimeCLT}(object, newdata, level = 0.95)
+\method{predict}{traveltimeCLT}(object, newdata, level = 0.95, ...)
 }
 \arguments{
 \item{object}{An output of \code{traveltimeCLT}, of class \code{traveltimeCLT}.}
@@ -12,6 +12,8 @@
 \item{newdata}{A data frame of new trips and their road level travel information, formatted as \code{trips}, see \code{trips} or \code{data(trips); View(trips)}.}
 
 \item{level}{Significance levels.}
+
+\item{...}{passing extra parameter, for example, time bin rules to be passed to \code{rules2timebins}, see \code{?rules2timebins} in trip-specific method.}
 }
 \value{
 Returns a data fram that inlcudes the ETA (and optionally the trips variance), with lower and upper prediction intervals (optional), for each trip in the \code{newdata}.
