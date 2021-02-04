@@ -1,0 +1,49 @@
+[1] 0.32
+
+
+
+
+
+Error: unexpected symbol in "  C-c C"
+[1] "/home/mo/src/traveltime-clt/plots"
+(list "traveltimeHMM" '(("rules" . "")) '("rules"))
+(list "" '(("tt" . "") ("est" . "") ("lq" . "") ("uq" . "NULL")) '("tt" "est" "lq" "uq"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+(list "traveltimeHMM" '(("logspeeds" . "NULL") ("trips" . "NULL") ("timeBins" . "NULL") ("linkIds" . "NULL") ("data" . "NULL") ("nQ" . "1") ("model" . "c(\"HMM\", \"trip-HMM\", \"trip\", \"no-dependence\")") ("tol.err" . "10") ("L" . "10") ("max.it" . "20") ("verbose" . "FALSE") ("max.speed" . "NULL") ("seed" . "NULL") ("tmat.p" . "NULL") ("init.p" . "NULL")) '("logspeeds" "trips" "timeBins" "linkIds" "data" "nQ" "model" "tol.err" "L" "max.it" "verbose" "max.speed" "seed" "tmat.p" "init.p"))
+(list "base" '(("x" . "") ("y" . "") ("..." . "")) '("x" "y" "..." "by" "by.x" "by.y" "all" "all.x" "all.y" "sort" "suffixes" "no.dups" "incomparables" "allow.cartesian" "height" "adjust"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+(list "base" '(("save" . "default") ("status" . "0") ("runLast" . "TRUE")) '("save" "status" "runLast"))
+(list "base" '(("save" . "default") ("status" . "0") ("runLast" . "TRUE")) '("save" "status" "runLast"))
+(list "base" '(("save" . "default") ("status" . "0") ("runLast" . "TRUE")) '("save" "status" "runLast"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+(list "" '(("x" . "") ("digits" . "0")) '("x" "digits" "..." "units"))
+Skipping install of 'traveltimeHMM' from a github remote, the SHA1 (dd215b57) has not changed since last install.
+  Use `force = TRUE` to force installation
+[1] "/home/mo/src/traveltime-clt/plots"
+[1] "/home/mo/src/traveltime-clt/plots"
+traveltimeHMM no-dependence 
+[1] "/home/mo/src/traveltime-clt/plots"
+Warning: Cannot use nQ > 1 without an HMM, resetting nQ = 1
+max.speed is not specified, setting at default value: 130 km/h
+Warning: Many observations are higher than speed limit (130km/h)!, about 0.12% of observations.  It is advised to remove these observations.
+Model no-dependence with 17967 trips over 41045 roads and 3 time bins...
+Expected completion of 20 iterations in 34.8 secs
+Parameters converged at iteration 1
+                [,1]
+MAREgeo         9.96
+RMSE          288.83
+MAE           191.64
+ME             38.04
+MAPE           15.89
+emprical.cov   73.55
+PI.length     520.92
+PI.rel.length  48.53
+(list "base" '(("file" . "NULL") ("append" . "FALSE") ("type" . "c(\"output\", \"message\")") ("split" . "FALSE")) '("file" "append" "type" "split"))
+Warning message:
+In sink() : no sink to remove
