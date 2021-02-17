@@ -11,16 +11,17 @@ sample_trips(data, nsamples = 100L, min.links = NULL)
 
 \item{nsamples}{The number of trips to sample. Default is 100.}
 
-\item{min.links}{The minimum number of links in each of the sampled trip.}
+\item{min.links}{The minimum number of links in each of the sampled trips.}
 }
 \value{
-Returns a vector of \code{tripID}'s of the sampled trips. Those trips are to removed from the data, it is up to the user to do so.
+Returns a vector of \code{tripID}'s of the sampled trips. Those trips are to be removed from the data, it is up to the user to do so.
 }
 \description{
 \code{sample_trips} samples a random set of trips from \code{data}.
 }
 \examples{
 \dontrun{
+
 data(trips)
 # sampling a 100 random trips with minimum of 10 links each.
 index = sample_trips(trips, min.links = 10)

@@ -13,8 +13,12 @@ time_bins(t)
 A string as a time bin
 }
 \description{
-\code{time_bins} transforms a real time to a time bin
+\code{time_bins} Transforms a real time to a time bin
 }
-\details{
-...
+\examples{
+\dontrun{
+
+
+}
+
 }

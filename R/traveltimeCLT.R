@@ -1,18 +1,24 @@
-#' Travel time estimation modeling using Central Limit Theorem
+#' Travel time estimation modelling using the Central Limit Theorem
 #'
-#' This function allows to calculate travel time estimation confidence intervals on the test set.
+#' This function allows for the calculation of travel time estimation confidence intervals on the test data set.
+#' 
 #' @param data A data frame of trips and their road level travel information, formated as \code{trips}, see \code{trips} or \code{View(data(trips))}.
 #' @param model Specifies whether the \code{trip-specific} or \code{population} models should be used.
 #' @param estimate Specifies whether to estimate \code{both} the mean and variance or \code{mean-only}. Only applied with \code{model=trip-specific}.
 #' @param lag Maximum lag at which to calculate the autocorrelations. Default is 1 for the first order-autocorrelations.
 #' @param nsamples The number of trips to sample for parameter estimation.
 #' @param min.links The minimum number of links in each of the sampled trip.
-#' @param timebin_rules is a list containing, start, end, days and tag for each timebin of the dataset (see example).
-#' @details
+#' @param timebin_rules A list containing, start, end, days and tag for each timebin of the dataset (see example in \code{time_bins}).
+#' 
+#' @details NULL
 #'
-#' @return
+#' @return Returns a list of the network parameters (namely the mean and standard deviation of travel time, estimated based on the train data set (see \code{link_mean_variance})) required for estimating travel times for the test data set.
 #' 
 #' @examples
+#' \dontrun{
+#' 
+#' fit <- traveltimeCLT(train, lag = 1)
+#' }
 #' 
 #' @import data.table
 #' @export
