@@ -9,7 +9,7 @@
 #'
 #' @details A residual sequence is a sequences of \code{(duration_sec_i - E[duration_sec_i])/sd(duration_sec_i)} for the \code{i} links of a trip. 
 #' 
-#' @return Returns a data frame of lag order and autocorrelations estimates.
+#' @return Returns a data frame of lag order and autocorrelation estimates.
 #' @examples
 #' \dontrun{
 #'

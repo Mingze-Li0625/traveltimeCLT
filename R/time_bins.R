@@ -115,7 +115,7 @@ rules2timebins<-function(rules){
 #' 
 #' \code{time_bins_functional} transforms a human readable function of time bin rules to a mapping functional for performance
 #' 
-#' @param time_bin_readable_function 
+#' @param time_bin_readable_function A humanly readable function for defining time bins
 #' @param period The length of the time slice, selected between "hours" and "minutes" (default is "hours").
 #'
 #' @details NULL
@@ -125,8 +125,6 @@ rules2timebins<-function(rules){
 #' @examples
 #' \dontrun{
 #' 
-#'     
-#' rules2timebins(rules)
 #' }
 #' @keywords internal
 #' @export
@@ -205,19 +203,19 @@ time_bins_readable <- function(t){
 }
 
 
-#' A mapping from real time to time bins
+#' A mapping from a real time to a time bin
 #' 
 #' \code{time_bins} Transforms a real time to a time bin
 #' 
 #' @param t A real time `POSIXlt` time stamp
 #'
 #' @details NULL
-#' @return A string as a time bin
+#' @return A string representing time bin out of \code{MorningRush}, \code{EveningRush}, \code{EveningNight}, \code{Weekendday}, \code{Weekday}.
 #' 
 #' @examples
 #' \dontrun{
 #' 
-#' 
+#' time_bins(Sys.time())
 #' }
 #' 
 #' @export

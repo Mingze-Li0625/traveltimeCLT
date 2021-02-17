@@ -13,10 +13,10 @@
 
 \item{level}{Significance levels.}
 
-\item{...}{passing extra parameter, for example, time bin rules to be passed to \code{rules2timebins}, see \code{?rules2timebins} in trip-specific method.}
+\item{...}{For passing extra parameters, for example, time bin rules to be passed to \code{rules2timebins}, see \code{rules2timebins} in the trip-specific method.}
 }
 \value{
-Returns a data fram that inlcudes the ETA (and optionally the trips variance), with lower and upper prediction intervals (optional), for each trip in the \code{newdata}.
+Returns a data frame that inlcudes the ETA (and optionally the trips variance), with lower and upper prediction bounds (optional), for each trip in the \code{newdata}.
 }
 \description{
 \code{predict.traveltimeCLT} predicts expected travel time (ETA) and a prediction interval based on the \code{trip-specific} and \code{population} methods.
@@ -26,5 +26,13 @@ Both the \code{trip-specific} and \code{population} prediction intervals are Gau
 }
 \examples{
 \dontrun{
+
+test_trips = sample_trips(trips, 10)
+train = trips[!trips$tripID \%in\% test_trips,]
+test =  trips[trips$tripID \%in\% test_trips,]
+
+fit <- traveltimeCLT(train, lag = 1)
+predict(fit, test)
 }
+
 }

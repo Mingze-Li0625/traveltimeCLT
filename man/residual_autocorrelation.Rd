@@ -16,7 +16,7 @@ residual_autocorrelation(data, network_parameters, lag = 1L, nsamples = 500L)
 \item{nsamples}{The number of trips to sample for parameter estimation. Default is 500.}
 }
 \value{
-Returns a data frame of lag order and autocorrelations estimates.
+Returns a data frame of lag order and autocorrelation estimates.
 }
 \description{
 \code{residual_autocorrelation} Calculates the average autocorrelations of the residual sequence of travel time.

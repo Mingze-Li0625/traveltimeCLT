@@ -23,8 +23,6 @@ Returns a functional of the provided time bin rules.
 \examples{
 \dontrun{
 
-    
-rules2timebins(rules)
 }
 }
 \keyword{internal}
