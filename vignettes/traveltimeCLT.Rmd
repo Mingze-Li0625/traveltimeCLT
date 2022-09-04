@@ -1,0 +1,346 @@
+---
+title: "Introduction to traveltimeCLT: Predictive inference for travel time on transportation networks"
+author: "Mohamad Elmasri, Aurélie Labbe, Denis Larocque, Laurent Charlin and Éric Germain"
+date: "`r Sys.Date()`"
+output:
+    rmarkdown::html_vignette:
+        toc: yes
+        toc_depth: 3
+        number_sections: yes
+    pdf_document:
+        toc: true
+        toc_depth: 3
+        number_sections: yes
+vignette: >
+  %\VignetteIndexEntry{Introduction to traveltimeCLT}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+```
+# Introduction
+Mobility is vital to human activities, as it is an integral component of our economic and trade networks, social interactions, political ties, and our quality of life. Large-scale trip-level data, with temporal and spatial coverage, enable us to better diagnose transportation problems and develop efficient solutions, for instance, to increased congestion-levels. Such data is progressively available from global positioning systems (GPS) on mobile phones and other devices. At the heart of many such transportation problems is the estimation of travel time between locations.
+
+This `traveltimeCLT` package provides a novel method for generating prediction intervals for travel time along a given route. By accounting for temporal-dependency in vehicle speeds, the parameters of the Gaussian asymptotic distribution for travel time normalized by distance are esimtated with less (or negligable) empirical bias compared to alternative methods.
+
+This is a work in progress. For bugs and features, please refer to [here](https://github.com/melmasri/traveltimeCLT/issues).
+
+
+# Example data set: `trips`
+This package includes a small data set (`trips`) that aggregates map-matched anonymized mobile phone GPS data collected in Quebec city in 2014 using the Mon Trajet smartphone application developed by [Brisk Synergies Inc](https://brisksynergies.com/). The precise duration of the time period is kept confidential.
+
+`trips` is used to explore methods offered in this package. Data similar to `trips` can be generated using other sources of GPS data, however, a preprocessing stage is necessary to map-match and aggregate the information up to the road segment (link) level. Such preprocessing is already performed on `trips`.
+
+`traveltimeCLT` does not perform this preprocessing stage, and the software cannot make use of raw GPS data.
+
+```{r}
+library(traveltimeCLT)
+data(trips)
+head(trips)
+```
+
+Travel data is organized around the notions of *trips* and *links*. Links are road segments each with well-defined beginning and end points and which can be traversed. A vehicle performs a trip when it travels from a start point to an end point through a sequence of links.  Thus trips can be considered as ordered sequences of links. `trips` includes data for a collection of trips.
+
+- Field `tripID` contains each *trip*'s ID, whereas field `linkID` contains the IDs of each *link* making up a trip. Both fields need to be numerical. It is assumed that, in the data set, all trips are grouped together and all links of a given trip appear in the order in which they are traversed (No verification is performed to that effect).  A given link corresponds to some physical entity such as a road segment, a portion of a road segment, or any combination of those. Hence, it is expected that links are used in more than one trip.
+
+- Field `timeBin` (character string, or factor) refers to the time "category" when the traversal of a given link occurred.  Time bins should reflect as much as possible time periods of the week encompassing similar traffic classes.  In `trips` we define five time bins: `Weekday`, `MorningRush`, `EveningRush`, `EveningNight` and `Weekendday`.
+
+```{r echo = FALSE, results='asis'}
+library(knitr)
+library(kableExtra)
+y <- c("Mon - Fri outside rush hour", "Mon - Fri, 7AM - 9AM", "Mon - Fri, 3PM - 6PM", "Sat 9AM - 9PM + Sun 9AM - 7PM", "Sat - Sun otherwise")
+x <- c("Weekday", "MorningRush", "EveningRush", "Weekendday", "EveningNight")
+z <- data.frame(cbind(y, x))
+names(z) <- c("Period of the week", "Time bin")
+knitr::kable(z, caption = "Table 1 - Example from `trips` : Time bin by period of the week", escape = FALSE, align = 'll', booktabs = TRUE) %>%
+    kable_styling(full_width = TRUE)
+```
+
+- Field `logspeed` contains the natural logarithm of the *speed* (in meter/second) of traversal of each link.  This information is central to the estimation algorithm.
+
+- Field `traveltime` refers to the traversal time (in seconds) of each link.  This field is mostly for reference and is not used directly in the package.
+
+- Field `length` refers to the length (in meters) of each link.  This information is used by the prediction algorithm.
+
+- Field `time` gives the entry time in POSIXct format for the traversal of a given link.  Individual datums are not used directly; however, the start time of the very first traversal is likely to be useful for providing the start time of a whole trip to the prediction function. Field `time` determine the time bin for each link, as illustrated in Table 1.
+
+`traveltimeCLT` includes functionality to convert time stamps to alternative time bins, please refer to [Time bins](Time bins).
+
+# Statistical models
+**This section should include a detailed description of the statistical/mathematical methods implemented in the package.**
+
+## Calling `traveltimeCLT`
+The estimation algorithm can be executed by calling the `traveltimeCLT` function. The function's interface is as follows.
+
+```{r eval=FALSE}
+traveltimeCLT(data,
+              model = c('trip-specific', 'population'),
+              estimate = c('both', 'mean-only'),
+              lag = 1L,
+              nsamples=500L,
+              min.links=5L,
+              timebin_rules = NULL)
+```
+
+For example, `traveltimeCLT` can be called using  the `trips` `data.frame` as
+
+```{r eval=FALSE}
+fit <- traveltimeCLT(data = trips,model = 'trip-specific', estimate = 'both', lag = 1, nsamples = 500, min.links = 5)
+```
+
+Table 3 provides a description for each parameter.
+
+```{r echo = FALSE, results='asis'}
+library(knitr)
+library(kableExtra)
+
+r <-       c("`data`", "A data frame of trips and their road level travel information, formated as `trips`, see `trips` or `View(data(trips))`.")
+
+r <- rbind(r,
+           c("`model`", "Specifies whether the `trip-specific` or `population` models should be used."))
+
+r <- rbind(r,
+           c("`estimate`", "Specifies whether to estimate `both` the mean and variance or `mean-only`. Only applied with `model=trip-specific`."))
+
+r <- rbind(r,
+           c("`lag`", "Maximum lag at which to calculate the autocorrelations. Default is 1 for the first order-autocorrelations."))
+
+r <- rbind(r,
+           c("`nsamples`", "The number of trips to sample for parameter estimation."))
+
+r <- rbind(r,
+           c("`min.links`", "The minimum number of links in each of the sampled trip."))
+
+r <- rbind(r,
+           c("`timebin_rules`", "A list containing, start, end, days and tag for each timebin of the dataset (see example in `time_bins`)."))
+
+z <- as.data.frame(r[,2], row.names = r[,1])
+names(z) <- ""
+knitr::kable(z, caption = "Table 2 - Parameters for `traveltimeCLT`", escape = FALSE)
+```
+
+## A word on imputation
+**This section is taken from the HMM repo, and must be checked for applicability to the new method.**
+
+The implementation allows imputing for combinations of road links and time bins, for which the lack of sufficient observations prevents reliable parameter estimation.  When imputation is required for a given combination, estimates for $\mu$, $\sigma$, $\Gamma$ and $\gamma$ are calculated on the basis of data available for the time bin involved *for all road links*.
+
+This approach differs from the one in Woodard et.al.(2016), where imputation is performed on the basis of road classification data (e.g. "arterial" or "primary collector road").  This implementation does not handle road classification data.
+
+Imputation is performed in the following three cases:
+
+- Case 1: when a combination (`links x timebins`) has fewer than `L` *total observations*;
+
+- Case 2: when a combination has fewer than `L` *initial state observations only*;
+
+- Case 3: when a combination has only initial states.
+
+The number of observations specified in parameter `L` determines the threshold below which imputation occurs for cases 1 and 2.
+
+## Return values
+The execution of `traveltimeCLT` returns a list of the parameters in Table 4. 
+
+```{r echo = FALSE, results='asis'}
+library(knitr)
+library(kableExtra)
+
+r <-       c("`network parameters`", "to complete.")
+
+r <- rbind(r,
+           c("`rho`", "to complete."))
+
+r <- rbind(r,
+           c("`residual variance`", "to complete."))
+
+r <- rbind(r,
+           c("`nsamples`", "An integer corresponding to the number of trips sampled for parameter estimation., equal to the parameter `nsamples` that was passed in the function call."))
+
+r <- rbind(r,
+           c("`min.links`", "An integer corresponding to the minimum number of links for each sampled trip, equal to the parameter `min.links` that was passed in the function call."))
+
+r <- rbind(r,
+           c("`lag`", "An integer corresponding to the maximum lag for calculating the autocorrelations, equal to the parameter `lag` that was passed in the function call."))
+
+r <- rbind(r,
+           c("`timebin_rules`", "A list containing details of the utilized timebins.  Equals $NULL$ if default timebins are used."))
+
+r <- rbind(r,
+           c("`estimate`", "A string specifying whether `both` the mean and variance or `mean-only` were calculated.  Same as parameter `estimate` that was passed in the function call."))
+
+r <- rbind(r,
+           c("`model`", "A string indicating whether the `trip-specific` or `population` model was used. Same as the parameter `model` that was passed in the function call."))
+
+z <- as.data.frame(r[,2], row.names = r[,1])
+names(z) <- ""
+knitr::kable(z, caption = "Table 3 - Components of the list object returned by `traveltimeCLT`", escape = FALSE)
+```
+
+# Prediction
+**This section should include a description of the methods used for prediction.**
+
+## Calling `predict.traveltime` or `predict`
+The prediction algorithm is executed by calling the `predict.traveltime`, or equivalently the `S3` method `predict`, which has the following interface:
+
+```{r eval=FALSE}
+predict(object,
+        newdata,
+        level,
+        ...)
+```
+
+For example, we can randomly select 10 trips from the dataset `trips` to use as the test data for prediction. Once these trips are selected, we use the remaining trips to estimate the model by calling `traveltimeCLT`. The output of `traveltimeCLT` and the test data are then passed to predict to generate predictions for the 10 randomly sampled trips.
+
+```{r eval=FALSE}
+test_trips = sample_trips(trips, 10)
+train = trips[!trips$tripID %in% test_trips,]
+test =  trips[trips$tripID %in% test_trips,]
+
+fit <- traveltimeCLT(train, lag = 1)
+pred <- predict(fit, test, 0.95)
+```
+                           
+Table 5 provides a description for each parameter.
+
+```{r echo = FALSE, results='asis'}
+library(knitr)
+library(kableExtra)
+
+r <-       c("`object`", "A list object corresponding to the output `traveltimeCLT`, of class `traveltimeCLT`.")
+
+r <- rbind(r,
+           c("`newdata`", "A data frame of new trips and their road level travel information, formatted as `trips`, see `trips` or `data(trips); View(trips)`."))
+
+r <- rbind(r,
+           c("`levels`", "Significance levels. Default is 0.95."))
+
+r <- rbind(r,
+           c("`...`", "For passing extra parameters, for example, time bin rules to be passed to `rules2timebins`, see `rules2timebins` in the trip-specific method."))
+
+z <- as.data.frame(r[,2], row.names = r[,1])
+names(z) <- ""
+knitr::kable(z, caption = "Table 4 - Parameters for `predict.traveltime`", escape = FALSE)
+```
+
+## Return values
+`predict.traveltime` returns a vector of length `n`, where `n` is the number of trips passed to `predict`. For each trip, `predict` returns the tripID, ETA (trip length in seconds), variance, and the lower and upper bounds of the confidence interval of travel time, according to the specified significance level. The output for the above example is provided below.
+
+```{r eval=FALSE}
+pred <- predict(fit, test, 0.95)
+print(pred)
+    tripID        ETA   variance        lwr       upr
+1    11273 1734.00888  30990.369 1343.40284 2124.6149
+2    11396  784.61539  26200.146  425.46409 1143.7667
+3    13922 1277.75451 152802.053  410.41290 2145.0961
+4    21978 1266.31193  23227.051  928.15163 1604.4722
+5  1000165   55.26015   1175.211  -20.80462  131.3249
+6  1002992  947.83252   6023.799  775.62154 1120.0435
+7  1003992 1931.34743  62290.712 1377.56748 2485.1274
+8  1005895 1247.47739  23665.694  906.13895 1588.8158
+9  2001730 1549.57224  39551.002 1108.30231 1990.8422
+10 2004090 2244.24231 695368.988  393.98024 4094.5044
+```
+
+# Model comparison
+**This section should include a discussion on the trip-specific vs population models.**
+
+# Time bins
+To specify different time bins than the ones supplied, `traveltimeHMM` provides a functional method called `rules2timebins()` that translates human readable weekly time bins to a conversion function.
+
+`rules2timebins()` takes a list of lists of time bin rules, where each sub-list specifies 4 variables, `start` and `end`as the start and end time of a time bin in 24h format, `days` as a vector specifying the weekdays this time bin applies to, `1` for Sunday, and `2:5` for weekdays, and finally a `tag` to specify a name for the time bin.
+
+For example,
+
+```{r eval=FALSE}
+rules = list(
+    list(start='6:30',  end= '9:00',  days = 1:5, tag='MR'),
+    list(start='15:00', end= '18:00', days = 2:5, tag='ER')
+)
+```
+
+specifies two time bins calls `MR` for morning rush, and `ER` for evening rush, the former is for all weekdays and the latter is for Tuesdays to Fridays. All other time intervals are assigned a time bin called `Other`.
+
+
+Passing `rules` to `rules2timebins()` would return an easy to use functional, for example
+
+```{r eval=FALSE}
+time_bins <- rules2timebins(rules)
+time_bins("2019-08-16 15:25:00 EDT") ## Friday
+[1] "ER"
+time_bins("2019-08-17 21:25:58 EDT") ## Saturday
+[1] "Other"
+```
+
+To change the time bins in `trips`, run the code
+
+```{r eval=FALSE}
+trips$timeBin <- time_bins(trips$time)
+head(trips)
+  tripID linkID timeBin logspeed traveltime    length                time
+1   2700  10469   Other 1.692292  13.000000  70.61488 2014-04-28 06:07:27
+2   2700  10444   Other 2.221321  18.927792 174.50487 2014-04-28 06:07:41
+3   2700  10460   Other 2.203074   8.589937  77.76295 2014-04-28 06:07:58
+4   2700  10462   Other 1.924290  14.619859 100.15015 2014-04-28 06:08:07
+5   2700  10512   Other 1.804293   5.071986  30.81574 2014-04-28 06:08:21
+6   2700   5890   Other 2.376925  31.585355 340.22893 2014-04-28 06:08:26
+```
+
+*_Remark_*: at package loading a default `time_bins()` functional is created, which constructs the default time bins of `trips`.
+
+## Prediction with new time bins
+Running the `trip-specific` model in `traveltimeCLT` with user-defined time bins requires several steps. First, the user defines the time bin rules and converts them to a functional using `rules2timebins`
+
+```{r eval=FALSE}
+rules = list(
+    list(start='6:30',  end= '9:00',  days = 1:5, tag='MR'),
+    list(start='15:00', end= '18:00', days = 2:5, tag='ER')
+)
+
+time_bins <- rules2timebins(rules)
+```
+
+Second, the time bins are applied to the data, and trips are divided into training and testing sets.
+
+```{r eval=FALSE}
+trips$timeBin <- time_bins(trips$time)
+
+test_trips = sample_trips(trips, 10)
+train = trips[!trips$tripID %in% test_trips,]
+test =  trips[trips$tripID %in% test_trips,]
+```
+
+Third, the `timebin_rules` are passed to `traveltime_CLT`.
+
+```{r eval=FALSE}
+fit <- traveltimeCLT(train, lag = 1, timebin_rules = rules)
+```
+
+Fourth, the `timebin_rules` are again passed to `predict`.
+
+```{r eval=FALSE}
+pred <- predict(fit, test, 0.95, rules)
+```
+
+In order to esitmate the `population` model with user-defined time bins, the data must initially be subset according to the desired time bin, before fitting using `traveltimeCLT`. This is necessitated because the `population` model randomnly samples the data without consideration for time bins. Once user-defined time bins are applied to the data, the `population` modeln can be fit as below.
+
+```{r eval=FALSE}
+morning_rush_trips =  trips[trips$timeBin=="MR",]
+
+test_trips = sample_trips(trips, 10)
+
+train = trips[!morning_rush_trips$tripID %in% test_trips,]
+test =  trips[morning_rush_trips$tripID %in% test_trips,]
+
+fit <- traveltimeCLT(train, lag = 1, model = population, timebin_rules = rules)
+
+pred <- predict(fit, test, 0.95, rules)
+```
+
+# References
+
+Woodard, D., Nogin, G., Koch, P., Racz, D., Goldszmidt, M., Horvitz, E., 2017.  "Predicting travel time reliability using mobile phone GPS data".  *Transportation Research Part C*, 75, 30-44.  <http://dx.doi.org/10.1016/j.trc.2016.10.011>

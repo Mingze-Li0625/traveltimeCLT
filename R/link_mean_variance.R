@@ -11,8 +11,8 @@
 #' @return Returns a hashed environment with keys as \code{paste0(linkID.from,'.', linkID.to,'.', timeBin)} and values containing \code{list(mean, sd, imputed_mean, imputed_sd)} as the mean and standard deviation of travel time for each unit, while \code{imputed_mean} and \code{imputed_sd} indicate whether the calculated quantities are imputed or calculated from observed data.
 #'
 #' @examples
-#'#' @examples
 #' \dontrun{
+#' 
 #' data(trips)
 #' link_mean_variance(trips)
 #' }

@@ -14,17 +14,14 @@ population_estimates(data, nsamples = 500L, level = 0.95)
 \item{level}{Significance level. Default is 0.95.}
 }
 \value{
-
+Returns the mean, standard deviation, and confidence interval of travel time estimated based on the entire population of trips.
 }
 \description{
 \code{population_estimates} estimates the population mean, variance of travel time
 }
-\details{
-
-}
 \examples{
 \dontrun{
 
-
+population_estimates(train)
 }
 }

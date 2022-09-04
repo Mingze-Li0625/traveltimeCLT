@@ -6,7 +6,7 @@
 #' @param population_parameters An output of \code{population_estimates}, see \code{?population_estimates}.
 #' @param level Significance level.
 #'
-#' @details NULL.
+#' @details NULL
 #'
 #' @return Returns a list of predictions.
 #' 

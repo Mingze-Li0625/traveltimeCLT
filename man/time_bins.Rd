@@ -2,7 +2,7 @@
 % Please edit documentation in R/time_bins.R
 \name{time_bins}
 \alias{time_bins}
-\title{A mapping from real time to time bins}
+\title{A mapping from a real time to a time bin}
 \usage{
 time_bins(t)
 }
@@ -10,11 +10,15 @@ time_bins(t)
 \item{t}{A real time \code{POSIXlt} time stamp}
 }
 \value{
-A string as a time bin
+A string representing time bin out of \code{MorningRush}, \code{EveningRush}, \code{EveningNight}, \code{Weekendday}, \code{Weekday}.
 }
 \description{
-\code{time_bins} transforms a real time to a time bin
+\code{time_bins} Transforms a real time to a time bin
 }
-\details{
-...
+\examples{
+\dontrun{
+
+time_bins(Sys.time())
+}
+
 }

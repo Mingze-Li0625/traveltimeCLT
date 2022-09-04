@@ -19,9 +19,6 @@ Returns a list of predictions.
 \description{
 \code{predict.traveltimeCLT.trip_specific} returns the predicted mean and variance of travel time for a specific route and start time.
 }
-\details{
-NULL.
-}
 \examples{
 \dontrun{
 

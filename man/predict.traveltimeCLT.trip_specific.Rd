@@ -24,7 +24,7 @@
 
 \item{network_parameters}{An output of \code{link_mean_variance}, see \code{?link_mean_variance}.}
 
-\item{rho}{Victor of auto-correlation in the order of lag, starting at lag 0 for no correlation.}
+\item{rho}{Vector of auto-correlation in the order of lag, starting at lag 0 for no correlation.}
 
 \item{timebin_rules}{A \code{list} of time bin rules to be passed to \code{rules2timebins}, see \code{?rules2timebins}.}
 

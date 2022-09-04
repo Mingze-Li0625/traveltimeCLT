@@ -2,7 +2,7 @@
 % Please edit documentation in R/time_bins.R
 \name{time_bins_functional}
 \alias{time_bins_functional}
-\title{Transforms a list of rules to a functional}
+\title{Transforms a list of time bin rules to a functional}
 \usage{
 time_bins_functional(
   time_bin_readable_function = time_bins_readable,
@@ -10,30 +10,19 @@ time_bins_functional(
 )
 }
 \arguments{
-\item{rules}{...}
+\item{time_bin_readable_function}{}
+
+\item{period}{The length of the time slice, selected between "hours" and "minutes" (default is "hours").}
 }
 \value{
-...
+Returns a functional of the provided time bin rules.
 }
 \description{
-Transforms a list of rules to a functional
+\code{time_bins_functional} transforms a human readable function of time bin rules to a mapping functional for performance
 }
-\details{
-...
+\examples{
+\dontrun{
+
 }
-\keyword{\code{time_bins_functional}}
-\keyword{a}
-\keyword{bin}
-\keyword{for}
-\keyword{function}
-\keyword{functional}
-\keyword{human}
+}
 \keyword{internal}
-\keyword{mapping}
-\keyword{of}
-\keyword{performance}
-\keyword{readable}
-\keyword{rules}
-\keyword{time}
-\keyword{to}
-\keyword{transforms}

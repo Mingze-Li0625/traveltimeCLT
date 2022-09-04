@@ -1,11 +1,23 @@
-#' Converts a list time bins rules to a table of rules for each day of the week
-#' @keywords internal
+#' Converts a list of time bin rules to a table of rules for each day of the week
 #' 
 #' \code{to7daybins} created a table of 7 rows, with rules per day.
 #' 
-#' @param rules ...
-#' @details ...
-#' @return ...
+#' @param rules A list of lists of rules, each sublist must contain 4 variables, \code{start} and \code{end} as the start and end times (24h format) of the time bin,
+#' \code{days} as a vector of days to apply this time bin to (1 for Sunday, ..., 7 for Saturday), and \code{tag} as the name of the time bin.
+#' 
+#' @details NULL
+#' @return Returns a table of time bin rules for each day of the week.
+#' @examples
+#' \dontrun{
+#' 
+#' rules = list(
+#'     list(start='6:30',  end= '9:00',  days = 1:5, tag='MR'),
+#'     list(start='15:00', end= '18:00', days = 2:5, tag='ER'))
+#' 
+#' to7daybins(rules)
+#' }
+#' 
+#' @keywords internal
 #' @export
 to7daybins <-function(rules){
     if(typeof(rules[[1]])=='list' ){
@@ -26,25 +38,26 @@ to7daybins <-function(rules){
 
 
 #' Converts a list of human readable rules to a functional that maps any datetime stamp to a time bin.
-#' @keywords internal
 #' 
 #' \code{rules2timebins} converts a list of human readable rules to a functional that maps any datetime stamp to a time bin.
 #' 
-#' @param rules A list of lists of rules, each sublist must contain 4 variables, \code{start} and \code{end} as the start and end times (24h) format of the time bin,
-#' \code{days} as a vector of days to apply this time bin to (1 for Sunday, ..., 7 for Saturday), and \code{tag} the name of the time bin.
+#' @param rules A list of lists of rules, each sublist must contain 4 variables, \code{start} and \code{end} as the start and end times (24h format) of the time bin,
+#' \code{days} as a vector of days to apply this time bin to (1 for Sunday, ..., 7 for Saturday), and \code{tag} as the name of the time bin.
 #'
 #' @details Unassigned time is by default tagged with \code{Other}
-#' @return a function that maps any datetime stamp to the associated time bins. 
+#' @return A function that maps any datetime stamp to the associated time bins. 
 #' 
 #' @examples
 #' \dontrun{
+#' 
 #' rules = list(
 #'     list(start='6:30',  end= '9:00',  days = 1:5, tag='MR'),
-#'     list(start='15:00', end= '18:00', days = 2:5, tag='ER')
-#' )
+#'     list(start='15:00', end= '18:00', days = 2:5, tag='ER'))
+#'     
 #' time_bins <- rules2timebins(rules)
 #' time_bins(Sys.time())
 #' }
+#' @keywords internal
 #' @export
 rules2timebins<-function(rules){
     time2min <- function(t){
@@ -98,16 +111,22 @@ rules2timebins<-function(rules){
 }
 
 
-#' Transforms a list of rules to a functional
-#' @keywords internal
+#' Transforms a list of time bin rules to a functional
 #' 
 #' \code{time_bins_functional} transforms a human readable function of time bin rules to a mapping functional for performance
 #' 
-#' @param rules ...
+#' @param time_bin_readable_function A humanly readable function for defining time bins
+#' @param period The length of the time slice, selected between "hours" and "minutes" (default is "hours").
 #'
-#' @details ...
-#' @return ...
+#' @details NULL
 #' 
+#' @return Returns a functional of the provided time bin rules.
+#' 
+#' @examples
+#' \dontrun{
+#' 
+#' }
+#' @keywords internal
 #' @export
 time_bins_functional<-function(time_bin_readable_function = time_bins_readable , period = c('hours', 'minutes')){
     ## A functional function that constructs a list with bin names for each hour of
@@ -147,17 +166,18 @@ time_bins_functional<-function(time_bin_readable_function = time_bins_readable ,
     }
 }
 
-#' A simple example of time bins function that is human readable.
+#' A simple example of the time bins function that is human readable.
 #' 
 #' \code{time_bins_readable} converts a datetime stamp to a time bin tag
 #' 
 #' @param t A datetime stamp.
 #'
-#' @details  ...
-#' @return a string representing time bin out of \code{MorningRush}, \code{EveningRush}, \code{EveningNight}, \code{Weekendday}, \code{Weekday}.
+#' @details NULL
+#' @return A string representing time bin out of \code{MorningRush}, \code{EveningRush}, \code{EveningNight}, \code{Weekendday}, \code{Weekday}.
 #' 
 #' @examples
 #' \dontrun{
+#' 
 #' time_bins_readable(Sys.time())
 #' }
 #' @export
@@ -183,14 +203,20 @@ time_bins_readable <- function(t){
 }
 
 
-#' A mapping from real time to time bins
+#' A mapping from a real time to a time bin
 #' 
-#' \code{time_bins} transforms a real time to a time bin
+#' \code{time_bins} Transforms a real time to a time bin
 #' 
 #' @param t A real time `POSIXlt` time stamp
 #'
-#' @details ...
-#' @return A string as a time bin
+#' @details NULL
+#' @return A string representing time bin out of \code{MorningRush}, \code{EveningRush}, \code{EveningNight}, \code{Weekendday}, \code{Weekday}.
+#' 
+#' @examples
+#' \dontrun{
+#' 
+#' time_bins(Sys.time())
+#' }
 #' 
 #' @export
 time_bins <- time_bins_functional()

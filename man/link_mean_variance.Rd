@@ -23,8 +23,8 @@ Returns a hashed environment with keys as \code{paste0(linkID.from,'.', linkID.t
 For links \code{(linkID.from, linkID.to, timeBin)} that have less than \code{L} number of observations, first they are imputed by \code{(linkID.from, timeBin)} estimates, if there at least \code{L} observations in that category, and second by \code{timeBin} estimates.
 }
 \examples{
-#' @examples
 \dontrun{
+
 data(trips)
 link_mean_variance(trips)
 }

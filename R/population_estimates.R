@@ -6,14 +6,14 @@
 #' @param nsamples The number of trips to sample for parameter estimation. Default is 500.
 #' @param level Significance level. Default is 0.95.
 #' 
-#' @details
+#' @details NULL
 #' 
-#' @return 
+#' @return Returns the mean, standard deviation, and confidence interval of travel time estimated based on the entire population of trips.
 #' 
 #' @examples
 #' \dontrun{
-#'
-#'
+#' 
+#' population_estimates(train)
 #' }
 #' @import data.table
 #' @export

@@ -7,43 +7,27 @@
 rules2timebins(rules)
 }
 \arguments{
-\item{rules}{A list of lists of rules, each sublist must contain 4 variables, \code{start} and \code{end} as the start and end times (24h) format of the time bin,
-\code{days} as a vector of days to apply this time bin to (1 for Sunday, ..., 7 for Saturday), and \code{tag} the name of the time bin.}
+\item{rules}{A list of lists of rules, each sublist must contain 4 variables, \code{start} and \code{end} as the start and end times (24h format) of the time bin,
+\code{days} as a vector of days to apply this time bin to (1 for Sunday, ..., 7 for Saturday), and \code{tag} as the name of the time bin.}
 }
 \value{
-a function that maps any datetime stamp to the associated time bins.
+A function that maps any datetime stamp to the associated time bins.
 }
 \description{
-Converts a list of human readable rules to a functional that maps any datetime stamp to a time bin.
+\code{rules2timebins} converts a list of human readable rules to a functional that maps any datetime stamp to a time bin.
 }
 \details{
 Unassigned time is by default tagged with \code{Other}
 }
 \examples{
 \dontrun{
+
 rules = list(
     list(start='6:30',  end= '9:00',  days = 1:5, tag='MR'),
-    list(start='15:00', end= '18:00', days = 2:5, tag='ER')
-)
+    list(start='15:00', end= '18:00', days = 2:5, tag='ER'))
+    
 time_bins <- rules2timebins(rules)
 time_bins(Sys.time())
 }
 }
-\keyword{\code{rules2timebins}}
-\keyword{a}
-\keyword{any}
-\keyword{bin.}
-\keyword{converts}
-\keyword{datetime}
-\keyword{functional}
-\keyword{human}
 \keyword{internal}
-\keyword{list}
-\keyword{maps}
-\keyword{of}
-\keyword{readable}
-\keyword{rules}
-\keyword{stamp}
-\keyword{that}
-\keyword{time}
-\keyword{to}

@@ -2,31 +2,29 @@
 % Please edit documentation in R/time_bins.R
 \name{to7daybins}
 \alias{to7daybins}
-\title{Converts a list time bins rules to a table of rules for each day of the week}
+\title{Converts a list of time bin rules to a table of rules for each day of the week}
 \usage{
 to7daybins(rules)
 }
 \arguments{
-\item{rules}{...}
+\item{rules}{A list of lists of rules, each sublist must contain 4 variables, \code{start} and \code{end} as the start and end times (24h format) of the time bin,
+\code{days} as a vector of days to apply this time bin to (1 for Sunday, ..., 7 for Saturday), and \code{tag} as the name of the time bin.}
 }
 \value{
-...
+Returns a table of time bin rules for each day of the week.
 }
 \description{
-Converts a list time bins rules to a table of rules for each day of the week
+\code{to7daybins} created a table of 7 rows, with rules per day.
 }
-\details{
-...
+\examples{
+\dontrun{
+
+rules = list(
+    list(start='6:30',  end= '9:00',  days = 1:5, tag='MR'),
+    list(start='15:00', end= '18:00', days = 2:5, tag='ER'))
+
+to7daybins(rules)
 }
-\keyword{7}
-\keyword{\code{to7daybins}}
-\keyword{a}
-\keyword{created}
-\keyword{day.}
+
+}
 \keyword{internal}
-\keyword{of}
-\keyword{per}
-\keyword{rows,}
-\keyword{rules}
-\keyword{table}
-\keyword{with}

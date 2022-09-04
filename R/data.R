@@ -1,6 +1,6 @@
-#' A sample of 4914 trips over Quebec City in 2014
+#' A sample of 4914 trips made in Quebec City in 2014
 #'
-#' A dataset containing 4914 driving trips for a total of 322799 observations.
+#' A dataset containing 4914 driving trips with a total of 322799 individual observations.
 #'
 #' @format A data frame with 322799 rows and 7 variables:
 #' \describe{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/traveltimeCLT.R
 \name{traveltimeCLT}
 \alias{traveltimeCLT}
-\title{Travel time estimation modeling using Central Limit Theorem}
+\title{Travel time estimation modelling using the Central Limit Theorem}
 \usage{
 traveltimeCLT(
   data,
@@ -27,17 +27,18 @@ traveltimeCLT(
 
 \item{min.links}{The minimum number of links in each of the sampled trip.}
 
-\item{timebin_rules}{is a list containing, start, end, days and tag for each timebin of the dataset (see example).}
+\item{timebin_rules}{A list containing, start, end, days and tag for each timebin of the dataset (see example in \code{time_bins}).}
 }
 \value{
-
+Returns a list of the network parameters (namely the mean and standard deviation of travel time, estimated based on the train data set (see \code{link_mean_variance})) required for estimating travel times for the test data set.
 }
 \description{
-This function allows to calculate travel time estimation confidence intervals on the test set.
-}
-\details{
-
+This function allows for the calculation of travel time estimation confidence intervals on the test data set.
 }
 \examples{
+\dontrun{
+
+fit <- traveltimeCLT(train, lag = 1)
+}
 
 }
