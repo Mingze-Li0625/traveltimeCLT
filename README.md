@@ -15,7 +15,7 @@ Package is based on [Elmasri et. al. (2020)](https://arxiv.org/abs/2004.11292).
 
 ## Installation
 
-Install from [GitHub](https://github.com/melmasri/traveltimeCLT) with:
+Install from [GitHub](https://melmasri.github.io/traveltimeCLT/articles/traveltimeCLT.html).
 
 ``` r
 # install.packages("devtools")
