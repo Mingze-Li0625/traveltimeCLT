@@ -1,5 +1,5 @@
 
-# Title: Estimate and predict travel time on road networks
+# Estimate and predict travel time on road networks
 
 Implements two methods for prediction of average travel time on a route
 and its uncertainty (variance): a general population-based prediction,
@@ -8,6 +8,10 @@ estimate of average travel time and asymptotic Gaussian-based prediction
 intervals. The trip-specific methods integrates route data to provide
 tight route-specific Gaussian-based predictive distribution. From which,
 average travel time and prediction intervals are supplied.
+
+Package is based on [Elmasri et. al. (2020)](https://arxiv.org/abs/2004.11292).
+
+[Package website](https://melmasri.github.io/traveltimeCLT/)
 
 ## Installation
 
