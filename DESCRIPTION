@@ -1,6 +1,6 @@
 Package: traveltimeCLT
 Title: Estimate and predict travel time on road networks
-Version: 0.0.0.9000
+Version: 0.9
 Authors@R: c(
     person(given = "Mohamad",
            family = "Elmasri",
@@ -9,10 +9,16 @@ Authors@R: c(
     person(given = "Adrien",
            family = "Hernandez",
            role = "ctb")
+           ,
+    person(given = "Joshua",
+           family = "Stipancic",
+           role = "ctb")
            )
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+Description: Implements two methods for prediction of average travel time on a route. A general population-based prediction, and a trip-specific method. The population-based method provide an estimate of average travel time and asymptotic Gaussian-based prediction intervals. The trip-specific methods integrates route data to provide tight Gaussian-based predictive distribution. From which, average travel time and prediction intervals are supplied. 
+Maintainer: Mohamad Elmasri <elmasri.m@use.startmail.com>
+URL: https://github.com/melmasri/traveltimeCLT
+BugReports: https://github.com/melmasri/traveltimeCLT/issues
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -20,5 +26,6 @@ RoxygenNote: 7.1.1.9000
 Imports:
     data.table,
 remotes: melmasri/traveltimeCLT
+VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)
