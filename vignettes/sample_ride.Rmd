@@ -109,14 +109,14 @@ acf(U, lag.max=2, plot=FALSE)
 # Evaluation on real data
 Taking the `trips` dataset associated with `traveltimeCLT`, we compute the required quantities of the sampling framework above, that is $\Pi$, $\{F_i(\cdot, \cdot)\}$, and the distribution of distance. All quantities are plotted below.
 
-![](/home/mo/src/traveltimeCLT/vignettes/img/freq.png){width=300 height=200} ![](/home/mo/src/traveltimeCLT/vignettes/img/speed_mean.png){width=300 height=200} 
+![](/home/mo/src/traveltimeCLT/vignettes/img/freq.png){width=400 height=300} ![](/home/mo/src/traveltimeCLT/vignettes/img/speed_mean.png){width=400 height=300} 
 
 
-![](/home/mo/src/traveltimeCLT/vignettes/img/speed_std.png){width=300 height=200}  ![](/home/mo/src/traveltimeCLT/vignettes/img/num_edges.png){width=300 height=200} 
+![](/home/mo/src/traveltimeCLT/vignettes/img/speed_std.png){width=400 height=300}  ![](/home/mo/src/traveltimeCLT/vignettes/img/num_edges.png){width=400 height=300} 
 
 To evaluate our graph-independent sampler, we compared the empirical CDF of the `trips` dataset to 1000 rides sampled from the above framework.  Surprisingly, despite using only summarized information and not the road graph itself, the two CDFs show a remarkably close fit. This demonstrates the sampler's ability to replicate travel time distributions even when edges might be disconnected in reality or sampled from different time periods.
 
-![](/home/mo/src/traveltimeCLT/vignettes/img/travel_time_plot.png){width=200 height=300 align="center"}
+![](/home/mo/src/traveltimeCLT/vignettes/img/travel_time_plot.png){width=300 height=400 align="center"}
 
 
 # Why does this work?

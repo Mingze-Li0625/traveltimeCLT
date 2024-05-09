@@ -176,10 +176,10 @@ S_i = \exp\{ \mu_i + \sigma_i * \Phi^{-1}(U_i)\}
 <h2 id="evaluation-on-real-data">Evaluation on real data<a class="anchor" aria-label="anchor" href="#evaluation-on-real-data"></a>
 </h2>
 <p>Taking the <code>trips</code> dataset associated with <code>traveltimeCLT</code>, we compute the required quantities of the sampling framework above, that is <span class="math inline">\(\Pi\)</span>, <span class="math inline">\(\{F_i(\cdot, \cdot)\}\)</span>, and the distribution of distance. All quantities are plotted below.</p>
-<p><img src="img/freq.png" width="300" height="200"><img src="img/speed_mean.png" width="300" height="200"></p>
-<p><img src="img/speed_std.png" width="300" height="200"><img src="img/num_edges.png" width="300" height="200"></p>
+<p><img src="img/freq.png" width="400" height="300"><img src="img/speed_mean.png" width="400" height="300"></p>
+<p><img src="img/speed_std.png" width="400" height="300"><img src="img/num_edges.png" width="400" height="300"></p>
 <p>To evaluate our graph-independent sampler, we compared the empirical CDF of the <code>trips</code> dataset to 1000 rides sampled from the above framework. Surprisingly, despite using only summarized information and not the road graph itself, the two CDFs show a remarkably close fit. This demonstrates the sampler’s ability to replicate travel time distributions even when edges might be disconnected in reality or sampled from different time periods.</p>
-<p><img src="img/travel_time_plot.png" align="center" width="200" height="300"></p>
+<p><img src="img/travel_time_plot.png" align="center" width="300" height="400"></p>
 </div>
 <div class="section level2">
 <h2 id="why-does-this-work">Why does this work?<a class="anchor" aria-label="anchor" href="#why-does-this-work"></a>
