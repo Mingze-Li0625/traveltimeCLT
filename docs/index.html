@@ -45,6 +45,18 @@
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="articles/sample_ride.html">Sampling rides independently of the road-graph</a>
+    </li>
+  </ul>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
@@ -66,13 +78,15 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="title-estimate-and-predict-travel-time-on-road-networks">Title: Estimate and predict travel time on road networks<a class="anchor" aria-label="anchor" href="#title-estimate-and-predict-travel-time-on-road-networks"></a>
+<div class="page-header"><h1 id="estimate-and-predict-travel-time-on-road-networks">Estimate and predict travel time on road networks<a class="anchor" aria-label="anchor" href="#estimate-and-predict-travel-time-on-road-networks"></a>
 </h1></div>
 <p>Implements two methods for prediction of average travel time on a route and its uncertainty (variance): a general population-based prediction, and a trip-specific method. The population-based method provide an estimate of average travel time and asymptotic Gaussian-based prediction intervals. The trip-specific methods integrates route data to provide tight route-specific Gaussian-based predictive distribution. From which, average travel time and prediction intervals are supplied.</p>
+<p>Package is based on <a href="https://arxiv.org/abs/2004.11292" class="external-link">Elmasri et. al. (2020)</a>.</p>
+<p><a href="https://melmasri.github.io/traveltimeCLT/" class="external-link">Package website</a></p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Install from <a href="https://github.com/melmasri/traveltimeCLT" class="external-link">GitHub</a> with:</p>
+<p>Install from <a href="https://melmasri.github.io/traveltimeCLT/articles/traveltimeCLT.html" class="external-link">GitHub</a>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"melmasri/traveltimeCLT"</span><span class="op">)</span></span></code></pre></div>
@@ -166,7 +180,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

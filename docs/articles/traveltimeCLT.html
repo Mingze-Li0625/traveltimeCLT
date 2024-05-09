@@ -45,6 +45,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/sample_ride.html">Sampling rides independently of the road-graph</a>
+    </li>
+  </ul>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
@@ -70,7 +82,7 @@
       <h1 data-toc-skip>Introduction to traveltimeCLT: Predictive inference for travel time on transportation networks</h1>
                         <h4 data-toc-skip class="author">Mohamad Elmasri, Aurélie Labbe, Denis Larocque, Laurent Charlin and Éric Germain</h4>
             
-            <h4 data-toc-skip class="date">2022-09-04</h4>
+            <h4 data-toc-skip class="date">2024-05-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/melmasri/traveltimeCLT/blob/HEAD/vignettes/traveltimeCLT.Rmd" class="external-link"><code>vignettes/traveltimeCLT.Rmd</code></a></small>
       <div class="hidden name"><code>traveltimeCLT.Rmd</code></div>
@@ -103,12 +115,12 @@
 <span><span class="co">#&gt; 5   2700  10512 Weekday  6.075674      5.071986        30.81574</span></span>
 <span><span class="co">#&gt; 6   2700   5890 Weekday 10.771731     31.585355       340.22893</span></span>
 <span><span class="co">#&gt;            entry_time</span></span>
-<span><span class="co">#&gt; 1 2014-04-28 06:07:27</span></span>
-<span><span class="co">#&gt; 2 2014-04-28 06:07:41</span></span>
-<span><span class="co">#&gt; 3 2014-04-28 06:07:58</span></span>
-<span><span class="co">#&gt; 4 2014-04-28 06:08:07</span></span>
-<span><span class="co">#&gt; 5 2014-04-28 06:08:21</span></span>
-<span><span class="co">#&gt; 6 2014-04-28 06:08:26</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 2014-04-28 11:07:27</span></span>
+<span><span class="co">#&gt; 2 2014-04-28 11:07:41</span></span>
+<span><span class="co">#&gt; 3 2014-04-28 11:07:58</span></span>
+<span><span class="co">#&gt; 4 2014-04-28 11:08:07</span></span>
+<span><span class="co">#&gt; 5 2014-04-28 11:08:21</span></span>
+<span><span class="co">#&gt; 6 2014-04-28 11:08:26</span></span></code></pre></div>
 <p>Travel data is organized around the notions of <em>trips</em> and <em>links</em>. Links are road segments each with well-defined beginning and end points and which can be traversed. A vehicle performs a trip when it travels from a start point to an end point through a sequence of links. Thus trips can be considered as ordered sequences of links. <code>trips</code> includes data for a collection of trips.</p>
 <ul>
 <li><p>Field <code>tripID</code> contains each <em>trip</em>’s ID, whereas field <code>linkID</code> contains the IDs of each <em>link</em> making up a trip. Both fields need to be numerical. It is assumed that, in the data set, all trips are grouped together and all links of a given trip appear in the order in which they are traversed (No verification is performed to that effect). A given link corresponds to some physical entity such as a road segment, a portion of a road segment, or any combination of those. Hence, it is expected that links are used in more than one trip.</p></li>
@@ -558,7 +570,7 @@ For passing extra parameters, for example, time bin rules to be passed to <code>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
