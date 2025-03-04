@@ -1,5 +1,4 @@
 library(mvtnorm)
-library(traveltimeCLT)
 library(data.table)
 library(doParallel)
 library(igraph)
