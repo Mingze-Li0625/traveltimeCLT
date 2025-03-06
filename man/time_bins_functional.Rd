@@ -10,7 +10,7 @@ time_bins_functional(
 )
 }
 \arguments{
-\item{time_bin_readable_function}{}
+\item{time_bin_readable_function}{A humanly readable function for defining time bins}
 
 \item{period}{The length of the time slice, selected between "hours" and "minutes" (default is "hours").}
 }
