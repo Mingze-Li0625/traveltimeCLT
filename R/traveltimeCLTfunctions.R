@@ -2,7 +2,7 @@
 #' @import data.table
 #' @import igraph
 #' @import tidygraph
-#' @import ggraph ggplot
+#' @import ggplot2
 #' @import stringr
 #' @export
 sd_one_input_is_0<-function(x){
@@ -424,6 +424,7 @@ path_length<- function( pathset,timeBin_x_connections) {
   return(result)
 }
 #' @export
+#' @importFrom ggplot2 ggplot stat_ecdf labs coord_cartesian scale_color_manual theme element_rect
 plot_CDF_compare <- function(realtime,simulatetime,simulate_data_name="simulated_data",
                              x_lab="Total Travel Time (seconds)",title= "CDF of Travel Time",x_max=4000){
   travel_time <- data.frame(sampled_time=realtime,simulated_time=simulatetime)
