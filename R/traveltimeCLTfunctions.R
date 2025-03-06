@@ -218,6 +218,8 @@ get_timeBin_x_connections <- function(trips=NULL,tripID=NULL,linkId=NULL,length=
   stats1
 }
 #' @export
+#' @importFrom ggraph ggraph geom_edge_link geom_node_point geom_node_text
+#' @importFrom ggplot2 scale_size_manual scale_color_manual theme_void theme
 plot_metric_graph <- function(sampledtrips){
   sampled_connection=get_timeBin_x_connections(sampledtrips)
   edges <- unique(sampled_connection, by = c("linkID", "nextLinkID"))
@@ -269,14 +271,14 @@ plot_metric_graph <- function(sampledtrips){
   g <- graph_from_data_frame(new_edges, directed = TRUE)
   tidy_g <- as_tbl_graph(g)
   node_label <- ifelse(V(g)$name %in% c(junction_nodes,end_nodes,start_nodes), V(g)$name, NA)
-  p1<-ggraph(tidy_g, layout = "stress") +
-    geom_edge_link(
-      aes(alpha = edge_alpha), 
-      arrow = arrow(length = unit(1.5, "mm")), 
-      edge_color = "black" 
+  p1 <- ggraph::ggraph(tidy_g, layout = "stress") +
+    ggraph::geom_edge_link(
+      ggplot2::aes(alpha = edge_alpha), 
+      arrow = ggplot2::arrow(length = grid::unit(1.5, "mm")), 
+      edge_color = "black"
     ) +
-    geom_node_point(
-      aes(
+    ggraph::geom_node_point(
+      ggplot2::aes(
         color = ifelse(name %in% start_nodes, "Start", 
                        ifelse(name %in% end_nodes, "End", 
                               ifelse(name %in% junction_nodes, "Junction", "Normal"))),
@@ -284,14 +286,12 @@ plot_metric_graph <- function(sampledtrips){
                       ifelse(name %in% end_nodes, "End", 
                              ifelse(name %in% junction_nodes, "Junction", "Normal")))
       )
-    )+
-    geom_node_text(aes(label = node_label), size = 3, color = "darkblue", repel = TRUE, na.rm = TRUE) +
-    scale_size_manual(values = c("Start" = 2, "End" = 2, "Junction" = 2, "Normal" = 0.01))+
-    scale_color_manual(values = c("Start" = "green", "End" = "red", "Junction" = "orange", "Normal" = "lightblue")
     ) +
-    theme_void() +  
-    theme(legend.position = "none") 
-  p1
+    ggraph::geom_node_text(ggplot2::aes(label = node_label), size = 3, color = "darkblue", repel = TRUE, na.rm = TRUE) +
+    ggplot2::scale_size_manual(values = c("Start" = 2, "End" = 2, "Junction" = 2, "Normal" = 0.01)) +
+    ggplot2::scale_color_manual(values = c("Start" = "green", "End" = "red", "Junction" = "orange", "Normal" = "lightblue")) +
+    ggplot2::theme_void() +
+    ggplot2::theme(legend.position = "none")
 }
 #' @export
 get_metric_graph <- function(timeBin_x_connections){
