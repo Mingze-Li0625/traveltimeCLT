@@ -2,7 +2,7 @@
 #' @import data.table
 #' @import igraph
 #' @import tidygraph
-#' @import ggraph
+#' @import ggraph ggplot
 #' @import stringr
 #' @export
 sd_one_input_is_0<-function(x){
@@ -429,7 +429,7 @@ plot_CDF_compare <- function(realtime,simulatetime,simulate_data_name="simulated
   travel_time <- data.frame(sampled_time=realtime,simulated_time=simulatetime)
   color_values <- c("sampled data" = "red", simulate_data_name = "black")
   names(color_values)[2] <- simulate_data_name
-  plot1<-ggraph::ggplot(travel_time) +
+  plot1<-ggplot(travel_time) +
     stat_ecdf(aes(x = sampled_time,color="sampled data")) +
     stat_ecdf(aes(x = simulated_time,color=simulate_data_name)) +
     labs(title = title, x = x_lab , y = "Cumulative Probability")+
