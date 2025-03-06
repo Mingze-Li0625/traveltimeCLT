@@ -1,10 +1,10 @@
-library(mvtnorm)
-library(data.table)
-library(doParallel)
-library(igraph)
-library(tidygraph)
-library(ggraph)
-library(stringr)
+#' @import mvtnorm
+#' @import data.table
+#' @import doParallel
+#' @import igraph
+#' @import tidygraph
+#' @import ggraph
+#' @import stringr
 #' @export
 sd_one_input_is_0<-function(x){
   x=na.omit(x)
