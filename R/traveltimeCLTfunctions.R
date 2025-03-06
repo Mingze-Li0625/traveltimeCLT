@@ -5,19 +5,19 @@ library(igraph)
 library(tidygraph)
 library(ggraph)
 library(stringr)
-
+#' @export
 sd_one_input_is_0<-function(x){
   x=na.omit(x)
   if(length(x)==1)return(0)
   else return(sd(x))
 }
-
+#' @export
 get_mode <- function(x) {
   x=na.omit(x)
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
 }
-
+#' @export
 dependent_uniform<-function(n, rho=0.31) {
   if(n==1)return(runif(1))
   S <-diag(n)
@@ -32,7 +32,7 @@ dependent_uniform<-function(n, rho=0.31) {
   U = c(pnorm(rmvnorm(1, sigma = St)))
   U
 }
-
+#' @export
 first_order_uniform<-function(n, rho=0.31) {
   S <-diag(n)
   if(n>1){
@@ -52,7 +52,7 @@ first_order_uniform<-function(n, rho=0.31) {
   }else U = runif(1)
   U
 }
-
+#' @export
 second_order_uniform<-function(n, rho=0.31) {
   S <-diag(n)
   if(n>2){
@@ -70,7 +70,7 @@ second_order_uniform<-function(n, rho=0.31) {
   }else U = runif(n)
   U
 }
-
+#' @export
 get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,
                             timeBin=NULL,time=NULL,duration=NULL,log_duration=NULL){
   trip<-tripID
@@ -122,7 +122,7 @@ get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,
   timeBin_x_edges[, ID := 1:.N]
   timeBin_x_edges
 }
-
+#' @export
 get_timeBin_x_connections <- function(trips=NULL,tripID=NULL,linkId=NULL,length=NULL,
                                 timeBin=NULL,time=NULL,duration=NULL,log_duration=NULL){
   trip<-tripID
@@ -164,23 +164,12 @@ get_timeBin_x_connections <- function(trips=NULL,tripID=NULL,linkId=NULL,length=
     trips[, duration := as.numeric(difftime(shift(time, type = "lead"), time, units = "secs")), by = trip]
     trips[, log_duration := log(duration)]
   }
-  cl <- makeCluster(8)
-  registerDoParallel(cl)
-  tripID <- unique(trips$trip)
-  link_net_list <- foreach(trip_id = tripID, .combine = rbind, .packages = "data.table") %dopar% {
-    trip_links <- trips[trip == trip_id, ]
-  temp_dt <- data.table(linkID = integer(), nextLinkID = integer(), log_duration = numeric(), timeBin = character(),length=numeric())
-  if(length(trip_links$linkId)>1) for (i in 1:(length(trip_links$linkId) - 1)) {
-    current_link <- trip_links$linkId[i]
-    one_way_link <- trip_links$linkId[i + 1]
-    log_duration <- trip_links$log_duration[i]
-    timeBin <- trip_links$timeBin[i]
-    Length <- trip_links$length[i]
-    temp_dt <- rbind(temp_dt, list(linkID = current_link, nextLinkID = one_way_link,log_duration = log_duration, timeBin = timeBin,length=Length))
-  }else return(data.table())
-  temp_dt
-  }
-  stopCluster(cl)
+  trips[, `:=`(nextLinkId, shift(linkId, type = "lead")), by = tripID]
+  trips<-na.omit(trips)
+  link_net_list<- trips[,c("log_duration","linkId","nextLinkId","timeBin","length")]
+  names(link_net_list)<-c("log_duration","linkID","nextLinkID","timeBin","length")
+
+
   timeBin_stats <- link_net_list[, 
                                  .(one_way_mean = mean(log_duration, na.rm = TRUE),
                                    one_way_sd = sd_one_input_is_0(log_duration),
@@ -229,7 +218,7 @@ get_timeBin_x_connections <- function(trips=NULL,tripID=NULL,linkId=NULL,length=
                         "one_way_sd", "one_way_frequency", "length", "fictional"))
   stats1
 }
-
+#' @export
 plot_metric_graph <- function(sampledtrips){
   sampled_connection=get_timeBin_x_connections(sampledtrips)
   edges <- unique(sampled_connection, by = c("linkID", "nextLinkID"))
@@ -305,7 +294,7 @@ plot_metric_graph <- function(sampledtrips){
     theme(legend.position = "none") 
   p1
 }
-
+#' @export
 get_metric_graph <- function(timeBin_x_connections){
   trips <- timeBin_x_connections
   net <- unique(trips, by = c("linkID", "nextLinkID"))
@@ -322,7 +311,7 @@ get_metric_graph <- function(timeBin_x_connections){
   return(list(one_way_map=g1,two_way_map=g2))
 }
 
-
+#' @export
 calculate_path_length <- function(graph, pathset) {
     if (length(pathset) < 1) return(numeric(0))
     result<-c()
@@ -332,7 +321,7 @@ calculate_path_length <- function(graph, pathset) {
     }
     result
 }
-
+#' @export
 path_time<- function( pathset,timeBin_x_connections,time="Global",simulator="independent",rho=0.31) {
   simulator<-tolower(simulator)
   isTimeBin<-T
@@ -398,7 +387,7 @@ path_time<- function( pathset,timeBin_x_connections,time="Global",simulator="ind
   }
   return(result)
 }
-
+#' @export
 findRoute <- function(graphs,start, end,k = 1) {
   g1<-graphs$one_way_map
   g2<-graphs$two_way_map
@@ -410,7 +399,7 @@ findRoute <- function(graphs,start, end,k = 1) {
   length2<-calculate_path_length(g2,paths2)
   return(list(oneway = paths1,onway_legnth=length1, twoway = paths2,twoway_length=length2))
 }
-
+#' @export
 path_length<- function( pathset,timeBin_x_connections) {
   result<-list()
   for (path_idx  in 1:length(pathset)) {
@@ -435,7 +424,7 @@ path_length<- function( pathset,timeBin_x_connections) {
   }
   return(result)
 }
-
+#' @export
 plot_CDF_compare <- function(realtime,simulatetime,simulate_data_name="simulated_data",
                              x_lab="Total Travel Time (seconds)",title= "CDF of Travel Time",x_max=4000){
   travel_time <- data.frame(sampled_time=realtime,simulated_time=simulatetime)
