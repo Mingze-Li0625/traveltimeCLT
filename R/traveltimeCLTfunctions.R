@@ -1,8 +1,5 @@
 #' @import mvtnorm
 #' @import data.table
-#' @import igraph
-#' @import tidygraph
-#' @import ggplot2
 #' @import stringr
 #' @export
 sd_one_input_is_0<-function(x){
@@ -220,12 +217,14 @@ get_timeBin_x_connections <- function(trips=NULL,tripID=NULL,linkId=NULL,length=
 #' @export
 #' @importFrom ggraph ggraph geom_edge_link geom_node_point geom_node_text
 #' @importFrom ggplot2 scale_size_manual scale_color_manual theme_void theme
+#' @importFrom igraph graph_from_data_frame degree
+#' @importFrom tidygraph as_tbl_graph
 plot_metric_graph <- function(sampledtrips){
   sampled_connection=get_timeBin_x_connections(sampledtrips)
   edges <- unique(sampled_connection, by = c("linkID", "nextLinkID"))
   edges <- edges[fictional==F,]
-  g <- graph_from_data_frame(edges, directed = TRUE)
-  tidy_g <- as_tbl_graph(g)
+  g <- igraph::graph_from_data_frame(edges, directed = TRUE)
+  tidy_g <- tidygraph::as_tbl_graph(g)
   edge_alpha <- 1
   filtered_trips <- sampledtrips
   start_nodes <- as.character(filtered_trips[, .( linkId[1]), by = trip]$V1)
@@ -268,8 +267,8 @@ plot_metric_graph <- function(sampledtrips){
     data.frame(from = from, to = to)
   }))
   
-  g <- graph_from_data_frame(new_edges, directed = TRUE)
-  tidy_g <- as_tbl_graph(g)
+  g <- igraph::graph_from_data_frame(new_edges, directed = TRUE)
+  tidy_g <- tidygraph::as_tbl_graph(g)
   node_label <- ifelse(V(g)$name %in% c(junction_nodes,end_nodes,start_nodes), V(g)$name, NA)
   p1 <- ggraph::ggraph(tidy_g, layout = "stress") +
     ggraph::geom_edge_link(
@@ -303,8 +302,8 @@ get_metric_graph <- function(timeBin_x_connections){
   filted_net <- unique(filted_net, by = c("linkID", "nextLinkID"))
   filted_net <- filted_net[,.(linkID,nextLinkID,length)]
   names(filted_net)[3]<-"weight"
-  g1 <- graph_from_data_frame(filted_net, directed = TRUE)
-  g2 <- graph_from_data_frame(net, directed = T)
+  g1 <- igraph::graph_from_data_frame(filted_net, directed = TRUE)
+  g2 <- igraph::graph_from_data_frame(net, directed = T)
   g1 <- simplify(g1, remove.multiple = TRUE, remove.loops = TRUE)
   g2 <- simplify(g2, remove.multiple = F, remove.loops = TRUE)
   return(list(one_way_map=g1,two_way_map=g2))

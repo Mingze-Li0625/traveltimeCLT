@@ -24,11 +24,11 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports:
+    igraph,
+    tidygraph,
     data.table,
     ggplot2,
     ggraph,
-    igraph,
-    tidygraph,
     mvtnorm,
     stringr
 remotes: melmasri/traveltimeCLT
