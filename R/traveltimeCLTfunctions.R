@@ -71,40 +71,40 @@ second_order_uniform<-function(n, rho=0.31) {
   U
 }
 #' @export
-get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,
-                            timeBin=NULL,time=NULL,duration=NULL,log_duration=NULL){
+get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,length=NULL,
+                                timeBin=NULL,time=NULL,duration=NULL,log_duration=NULL){
   trip<-tripID
   frameAvailable <- !is.null(trips)
   if(frameAvailable){
     trips <- data.table(trips)
-    tripParamsAvailable <- !is.null(trips$trip) & !is.null(trips$linkId)
+    tripParamsAvailable <- !is.null(trips$trip) & !is.null(trips$linkId)& !is.null(trips$length)
     timeParamsAvailable1 <- !is.null(trips$timeBin) & !is.null(trips$duration) &!is.null(trips$log_duration)
     timeParamsAvailable2 <- !is.null(trips$time)
   }
-    else{
-  tripParamsAvailable <- !is.null(trip) & !is.null(linkId)
-  timeParamsAvailable1 <- !is.null(timeBin) & (!is.null(duration) |!is.null(log_duration))
-  timeParamsAvailable2 <- !is.null(time)
-    }
-  if(!tripParamsAvailable)stop("Either 'trip' or 'linkId' is not provided.")
+  else{
+    tripParamsAvailable <- !is.null(trip) & !is.null(linkId)& !is.null(length)
+    timeParamsAvailable1 <- !is.null(timeBin) & (!is.null(duration) |!is.null(log_duration))
+    timeParamsAvailable2 <- !is.null(time)
+  }
+  if(!tripParamsAvailable)stop("Either 'trip' ,'length', or 'linkId' is not provided.")
   if(!timeParamsAvailable1&!timeParamsAvailable2)stop("'time' or 'timBin' and 'duration' is not provided.")
   if(!frameAvailable){
     if(!timeParamsAvailable2){
       if(!is.null(duration)){
         if (length(trip) != length(linkId) || length(trip) != length(duration)||
-            length(trip) != length(timeBin)) 
-          stop("Parameter vectors for 'tripID', 'linkId','duration', and 'timeBin' are not equal in length!")
-        trips<-data.table(trip=trip,linkId=linkId,timeBin=timeBin,log_duration=log(duration))
+            length(trip) != length(timeBin) || length(trip) != length(length))
+          stop("Parameter vectors for 'tripID', 'linkId','duration', 'length', and 'timeBin' are not equal in length!")
+        trips<-data.table(trip=trip,linkId=linkId,timeBin=timeBin,log_duration=log(duration),length=length)
       }else{
         if (length(trip) != length(linkId) || length(trip) != length(log_duration)||
-            length(trip) != length(timeBin))
-          stop("Parameter vectors for 'tripID', 'linkId','log_duration', and 'timeBin' are not equal in length!")
-        trips<-data.table(trip=trip,linkId=linkId,timeBin=timeBin,log_duration=log_duration)
+            length(trip) != length(timeBin)|| length(trip) != length(length))
+          stop("Parameter vectors for 'tripID', 'linkId','log_duration','length', and 'timeBin' are not equal in length!")
+        trips<-data.table(trip=trip,linkId=linkId,timeBin=timeBin,log_duration=log_duration,length=length)
       }
     }else{
-      if (length(trip) != length(linkId) || length(trip) != length(time))
-        stop("Parameter vectors for 'tripID', 'linkId', and 'time' are not equal in length!")
-      trips<-data.table(trip=trip,linkId=linkId,time=time)
+      if (length(trip) != length(linkId) || length(trip) != length(time)|| length(trip) != length(length))
+        stop("Parameter vectors for 'tripID', 'linkId', 'length', and 'time' are not equal in length!")
+      trips<-data.table(trip=trip,linkId=linkId,time=time,length=length)
     }
   }
   if(!timeParamsAvailable1){
@@ -115,9 +115,9 @@ get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,
     trips <- na.omit(trips)
   }
   timeBin_x_edges <- trips[,.(mean = mean(log_duration, na.rm = TRUE),
-                             sd = sd_one_input_is_0(log_duration),
-                             frequency = .N,
-                             length = get_mode(length)),
+                              sd = sd_one_input_is_0(log_duration),
+                              frequency = .N,
+                              length = get_mode(length)),
                            by = .(linkId, timeBin)]
   timeBin_x_edges[, ID := 1:.N]
   timeBin_x_edges
