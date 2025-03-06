@@ -217,7 +217,7 @@ get_timeBin_x_connections <- function(trips=NULL,tripID=NULL,linkId=NULL,length=
 #' @export
 #' @importFrom ggraph ggraph geom_edge_link geom_node_point geom_node_text
 #' @importFrom ggplot2 scale_size_manual scale_color_manual theme_void theme
-#' @importFrom igraph graph_from_data_frame degree
+#' @importFrom igraph graph_from_data_frame degree V all_simple_paths
 #' @importFrom tidygraph as_tbl_graph
 plot_metric_graph <- function(sampledtrips){
   sampled_connection=get_timeBin_x_connections(sampledtrips)
@@ -229,11 +229,11 @@ plot_metric_graph <- function(sampledtrips){
   filtered_trips <- sampledtrips
   start_nodes <- as.character(filtered_trips[, .( linkId[1]), by = trip]$V1)
   end_nodes <- as.character(filtered_trips[, .( linkId[length(linkId)]), by = trip]$V1)
-  junction_nodes <- V(g)[degree(g, mode = "out") > 1 | degree(g, mode = "in") > 1]$name
-  node_label <- ifelse(V(g)$name %in% c(junction_nodes,end_nodes,start_nodes), V(g)$name, NA)
+  junction_nodes <- igraph::V(g)[degree(g, mode = "out") > 1 | degree(g, mode = "in") > 1]$name
+  node_label <- ifelse(igraph::V(g)$name %in% c(junction_nodes,end_nodes,start_nodes), igraph::V(g)$name, NA)
   paths <- list()
   for (i in 1:length(start_nodes)) {
-    paths <- c(paths, all_simple_paths(g, from = start_nodes[i], to = end_nodes[i]))
+    paths <- c(paths, igraph::all_simple_paths(g, from = start_nodes[i], to = end_nodes[i]))
   }
   shorten_segment <- function(segment) {
     l<-length(segment)
@@ -269,7 +269,7 @@ plot_metric_graph <- function(sampledtrips){
   
   g <- igraph::graph_from_data_frame(new_edges, directed = TRUE)
   tidy_g <- tidygraph::as_tbl_graph(g)
-  node_label <- ifelse(V(g)$name %in% c(junction_nodes,end_nodes,start_nodes), V(g)$name, NA)
+  node_label <- ifelse(igraph::V(g)$name %in% c(junction_nodes,end_nodes,start_nodes), igraph::V(g)$name, NA)
   p1 <- ggraph::ggraph(tidy_g, layout = "stress") +
     ggraph::geom_edge_link(
       ggplot2::aes(alpha = edge_alpha), 
@@ -293,6 +293,7 @@ plot_metric_graph <- function(sampledtrips){
     ggplot2::theme(legend.position = "none")
 }
 #' @export
+#' @importFrom igraph simplify
 get_metric_graph <- function(timeBin_x_connections){
   trips <- timeBin_x_connections
   net <- unique(trips, by = c("linkID", "nextLinkID"))
@@ -304,12 +305,13 @@ get_metric_graph <- function(timeBin_x_connections){
   names(filted_net)[3]<-"weight"
   g1 <- igraph::graph_from_data_frame(filted_net, directed = TRUE)
   g2 <- igraph::graph_from_data_frame(net, directed = T)
-  g1 <- simplify(g1, remove.multiple = TRUE, remove.loops = TRUE)
-  g2 <- simplify(g2, remove.multiple = F, remove.loops = TRUE)
+  g1 <- igraph::simplify(g1, remove.multiple = TRUE, remove.loops = TRUE)
+  g2 <- igraph::simplify(g2, remove.multiple = F, remove.loops = TRUE)
   return(list(one_way_map=g1,two_way_map=g2))
 }
 
 #' @export
+#' @importFrom igraph E
 calculate_path_length <- function(graph, pathset) {
     if (length(pathset) < 1) return(numeric(0))
     result<-c()
@@ -386,13 +388,14 @@ path_time<- function( pathset,timeBin_x_connections,time="Global",simulator="ind
   return(result)
 }
 #' @export
+#' @importFrom igraph k_shortest_paths
 findRoute <- function(graphs,start, end,k = 1) {
   g1<-graphs$one_way_map
   g2<-graphs$two_way_map
   start <- as.character(start)
   end <- as.character(end)
-  paths1 <- k_shortest_paths(g1, from = start, to = end, k = k, mode = "out")$vpaths
-  paths2 <- k_shortest_paths(g2, from = start, to = end, k = k, mode = "out")$vpaths
+  paths1 <- igraph::k_shortest_paths(g1, from = start, to = end, k = k, mode = "out")$vpaths
+  paths2 <- igraph::k_shortest_paths(g2, from = start, to = end, k = k, mode = "out")$vpaths
   length1<-calculate_path_length(g1,paths1)
   length2<-calculate_path_length(g2,paths2)
   return(list(oneway = paths1,onway_legnth=length1, twoway = paths2,twoway_length=length2))
