@@ -1,89 +1,76 @@
 #' @import mvtnorm
 #' @import data.table
 #' @import stringr
-#' @export
-sd_one_input_is_0<-function(x){
-  x=na.omit(x)
-  if(length(x)==1)return(0)
-  else return(sd(x))
-}
-#' @export
-get_mode <- function(x) {
-  x=na.omit(x)
-  ux <- unique(x)
-  ux[which.max(tabulate(match(x, ux)))]
-}
-#' @export
-dependent_uniform<-function(n, rho=0.31) {
-  if(n==1)return(runif(1))
-  S <-diag(n)
-  for (i in 1:n) {
-    for (j in 2:n) {
-      S[i, j] <- rho^(abs(i-j))
-    }
-  }
-  S = S +t(S)
-  diag(S)<-1 
-  St = 2 * sin(S * pi/6) # must be positive definite
-  U = c(pnorm(rmvnorm(1, sigma = St)))
-  U
-}
-#' @export
-first_order_uniform<-function(n, rho=0.31) {
-  S <-diag(n)
-  if(n>1){
-    if(n>2)for (i in 2:(n-1)) {
-      for (j in (i-1):(i+1)) {
-        S[i, j] <- 2*rho^(abs(1))
-      }
-    }
-    S[n,n-1]=2*rho
-    S[1, 2]=rho
-    S[2, 1]=rho
-    diag(S)<-1
-    eigen_values <- eigen(S, symmetric = TRUE)$values
-    if(!all(eigen_values >= 0))
-      S <- as.matrix(Matrix::nearPD(S, cor = TRUE)$mat)
-    U = c(pnorm(rmvnorm(1, sigma = S)))
-  }else U = runif(1)
-  U
-}
-#' @export
-second_order_uniform<-function(n, rho=0.31) {
-  S <-diag(n)
-  if(n>2){
-    for (i in 1:n) {
-      if(i-2>0)S[i, (i-2)] <- 2*rho
-      if(i+2<=n)S[i, (i+2)] <- 2*rho
-    }
-    S[1, 3]=rho
-    S[3, 1]=rho
-    diag(S)<-1
-    eigen_values <- eigen(S, symmetric = TRUE)$values
-    if(!all(eigen_values >= 0))
-      S <- as.matrix(Matrix::nearPD(S, cor = TRUE)$mat)
-    U = c(pnorm(rmvnorm(1, sigma = S)))
-  }else U = runif(n)
-  U
-}
+NULL
+# -------------functions -------------------------------------------------------
+
+
+#' Generate time-bin \eqn{\times} edge statistics table from trip data
+#'
+#' This function processes the trip data to statistics (mean and sd of log duration, frequency, length) 
+#' categorized by edges and time bins. It accept both vector input and data table (`trips`) 
+#'
+#' @param trips A `data.table` containing trips data. Column names are case-insensitive.
+#'             Expected it contains: trip, linkID, length; time, or duration/logduration+timeBin. See details.
+#' @param tripID Vector of trip ID (if `trips` is not provided).
+#' @param linkId Vector of edge ID.
+#' @param length Vector of edge lengths.
+#' @param timeBin Vector of pre-computed time bins. We recommand use the function \code{\link{time_bins_readable}}.
+#' @param time Vector of time the car enter the edge.
+#' @param duration Vector of measured durations of finish the edge.
+#' @param log_duration Vector of log durations (alternative to `duration`).
+#'
+#' @return A `data.table` with columns:
+#' \itemize{
+#'   \item \code{linkId}: Identifier for the edge link.
+#'   \item \code{timeBin}: Time period the trip is in.
+#'   \item \code{mean}: Mean log-duration.
+#'   \item \code{sd}: Standard deviation of log-duration (returns 0 for single observations).
+#'   \item \code{frequency}: Number of observations.
+#'   \item \code{length}: The edge length, calculated by mode.
+#'   \item \code{ID}: Unique identifier for the edge and timeBin.
+#' }
+#'
+#' @details
+#' - If `trips` is provided: Column names are case-insensitive.
+#' - If `trips` is not provided: All vector parameters must be equal-length
+#' 
+#' The input need to fulfill:
+#' - Time parameters: `timeBin` + (`duration` or `log_duration`), OR `time`.
+#' This function will use time if provided.
+#' - Trip parameters: `trip`, `linkId`, `length`. Column `trip` in trips refer the trip ID.
+#'
+#' @examples
+#' #Use a data table
+#' data(trips)
+#' names(trips)<-c("trip","linkid","timebin","speed","duration","length","time")
+#' stat<-get_timeBin_x_edges(trips)
+#' View(stat)
+#' # Using raw parameters
+#' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @export
 get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,length=NULL,
                                 timeBin=NULL,time=NULL,duration=NULL,log_duration=NULL){
   trip<-tripID
   frameAvailable <- !is.null(trips)
   if(frameAvailable){
+    original_names <- names(trips)
+    names(trips) <- tolower(names(trips))
     trips <- data.table(trips)
-    tripParamsAvailable <- !is.null(trips$trip) & !is.null(trips$linkId)& !is.null(trips$length)
-    timeParamsAvailable1 <- !is.null(trips$timeBin) & !is.null(trips$duration) &!is.null(trips$log_duration)
-    timeParamsAvailable2 <- !is.null(trips$time)
-  }
-  else{
+    tripParamsAvailable <- all(c("trip", "linkid", "length") %in% names(trips))
+    timeParamsAvailable1 <- all(c("timebin", "duration") %in% names(trips))|all(c("timebin", "log_duration") %in% names(trips))
+    timeParamsAvailable2 <- "time" %in% names(trips)
+    setnames(trips, 
+             old = c( "linkid", "timebin"),
+             new = c( "linkId", "timeBin"),
+             skip_absent = TRUE)
+  } else{
     tripParamsAvailable <- !is.null(trip) & !is.null(linkId)& !is.null(length)
     timeParamsAvailable1 <- !is.null(timeBin) & (!is.null(duration) |!is.null(log_duration))
     timeParamsAvailable2 <- !is.null(time)
   }
   if(!tripParamsAvailable)stop("Either 'trip' ,'length', or 'linkId' is not provided.")
-  if(!timeParamsAvailable1&!timeParamsAvailable2)stop("'time' or 'timBin' and 'duration' is not provided.")
+  if(!timeParamsAvailable1&!timeParamsAvailable2)stop("'time' or 'timeBin' and 'duration' is not provided.")
   if(!frameAvailable){
     if(!timeParamsAvailable2){
       if(!is.null(duration)){
@@ -103,12 +90,13 @@ get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,length=NULL,
       trips<-data.table(trip=trip,linkId=linkId,time=time,length=length)
     }
   }
-  if(!timeParamsAvailable1){
+  if(timeParamsAvailable2){
     trips$time <- as.POSIXct( trips$time)
     trips$timeBin<-time_bins_readable(trips$time)
     trips[, duration := as.numeric(difftime(shift(time, type = "lead"), time, units = "secs")), by = trip]
     trips[, log_duration := log(duration)]
-    trips <- na.omit(trips)
+  }else  if(is.null(trips$log_duration)){
+    trips[, log_duration := log(duration)]
   }
   timeBin_x_edges <- trips[,.(mean = mean(log_duration, na.rm = TRUE),
                               sd = sd_one_input_is_0(log_duration),
@@ -124,40 +112,48 @@ get_timeBin_x_connections <- function(trips=NULL,tripID=NULL,linkId=NULL,length=
   trip<-tripID
   frameAvailable <- !is.null(trips)
   if(frameAvailable){
+    original_names <- names(trips)
+    names(trips) <- tolower(names(trips))
     trips <- data.table(trips)
-    tripParamsAvailable <- !is.null(trips$trip) & !is.null(trips$linkId)& !is.null(trips$length)
-    timeParamsAvailable1 <- !is.null(trips$timeBin) & !is.null(trips$duration) &!is.null(trips$log_duration)
-    timeParamsAvailable2 <- !is.null(trips$time)
-  }
-  else{
+    tripParamsAvailable <- all(c("trip", "linkid", "length") %in% names(trips))
+    timeParamsAvailable1 <- all(c("timebin", "duration") %in% names(trips))|all(c("timebin", "log_duration") %in% names(trips))
+    timeParamsAvailable2 <- "time" %in% names(trips)
+    setnames(trips, 
+             old = c("linkid", "timebin"),
+             new = c( "linkId", "timeBin"),
+             skip_absent = TRUE)
+  } else{
     tripParamsAvailable <- !is.null(trip) & !is.null(linkId)& !is.null(length)
     timeParamsAvailable1 <- !is.null(timeBin) & (!is.null(duration) |!is.null(log_duration))
     timeParamsAvailable2 <- !is.null(time)
   }
-  if(!tripParamsAvailable)stop("Either 'trip', 'length' or 'linkId' is not provided.")
+  if(!tripParamsAvailable)stop("Either 'trip' ,'length', or 'linkId' is not provided.")
+  if(!timeParamsAvailable1&!timeParamsAvailable2)stop("'time' or 'timeBin' and 'duration' is not provided.")
   if(!frameAvailable){
     if(!timeParamsAvailable2){
       if(!is.null(duration)){
         if (length(trip) != length(linkId) || length(trip) != length(duration)||
-            length(trip) != length(timeBin)||length(trip) != length(length)) 
-          stop("Parameter vectors for 'tripID', 'length', 'linkId','duration', and 'timeBin' are not equal in length!")
+            length(trip) != length(timeBin) || length(trip) != length(length))
+          stop("Parameter vectors for 'tripID', 'linkId','duration', 'length', and 'timeBin' are not equal in length!")
         trips<-data.table(trip=trip,linkId=linkId,timeBin=timeBin,log_duration=log(duration),length=length)
       }else{
         if (length(trip) != length(linkId) || length(trip) != length(log_duration)||
-            length(trip) != length(timeBin)||length(trip)!= length(length))
-          stop("Parameter vectors for 'tripID','length', 'linkId','log_duration', and 'timeBin' are not equal in length!")
+            length(trip) != length(timeBin)|| length(trip) != length(length))
+          stop("Parameter vectors for 'tripID', 'linkId','log_duration','length', and 'timeBin' are not equal in length!")
         trips<-data.table(trip=trip,linkId=linkId,timeBin=timeBin,log_duration=log_duration,length=length)
       }
     }else{
-      if (length(trip) != length(linkId) || length(trip) != length(time) || length(trip) != length((length)))
-        stop("Parameter vectors for 'tripID', 'length','linkId', and 'time' are not equal in length!")
+      if (length(trip) != length(linkId) || length(trip) != length(time)|| length(trip) != length(length))
+        stop("Parameter vectors for 'tripID', 'linkId', 'length', and 'time' are not equal in length!")
       trips<-data.table(trip=trip,linkId=linkId,time=time,length=length)
     }
   }
-  if(!timeParamsAvailable1){
+  if(timeParamsAvailable2){
     trips$time <- as.POSIXct( trips$time)
     trips$timeBin<-time_bins_readable(trips$time)
     trips[, duration := as.numeric(difftime(shift(time, type = "lead"), time, units = "secs")), by = trip]
+    trips[, log_duration := log(duration)]
+  }else  if(is.null(trips$log_duration)){
     trips[, log_duration := log(duration)]
   }
   trips[, `:=`(nextLinkId, shift(linkId, type = "lead")), by = tripID]
