@@ -47,6 +47,8 @@ NULL
 #' stat<-get_timeBin_x_edges(trips)
 #' View(stat)
 #' # Using raw parameters
+#' stat2=get_timeBin_x_edges(tripID=trips$trip,time=trips$time,linkId=trips$linkid,length = trips$length)
+#' View(stat2)
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @export
 get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,length=NULL,
@@ -103,6 +105,13 @@ get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,length=NULL,
                               frequency = .N,
                               length = get_mode(length)),
                            by = .(linkId, timeBin)]
+  globalstat <- trips[,.(mean = mean(log_duration, na.rm = TRUE),
+                         sd = sd_one_input_is_0(log_duration),
+                         frequency = .N,
+                         length = get_mode(length)),
+                      by = .(linkId)]
+  globalstat[, timeBin := "Global"]
+  timeBin_stats <- rbind(timeBin_stats, global_stats)
   timeBin_x_edges[, ID := 1:.N]
   timeBin_x_edges
 }

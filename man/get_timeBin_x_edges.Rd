@@ -63,6 +63,11 @@ This function will use time if provided.
 }
 }
 \examples{
+#Use a data table
+data(trips)
+names(trips)<-c("trip","linkid","timebin","speed","duration","length","time")
+stat<-get_timeBin_x_edges(trips)
+View(stat)
 # Using raw parameters
 }
 \author{
