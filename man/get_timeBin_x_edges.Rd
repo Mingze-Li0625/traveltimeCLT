@@ -31,7 +31,7 @@ Expected it contains: trip, linkID, length; time, or duration/logduration+timeBi
 
 \item{duration}{Vector of measured durations of finish the edge.}
 
-\item{log_duration}{Vector of log durations (alternative to \code{duration}).}
+\item{log_duration}{Vector of log durations.}
 }
 \value{
 A \code{data.table} with columns:
@@ -54,6 +54,7 @@ categorized by edges and time bins. It accept both vector input and data table (
 \itemize{
 \item If \code{trips} is provided: Column names are case-insensitive.
 \item If \code{trips} is not provided: All vector parameters must be equal-length
+\item This function will use \code{time} if provided. Otherwise it will use \code{log_duration}, and then \code{duration}.
 }
 
 The input need to fulfill:

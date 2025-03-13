@@ -107,69 +107,152 @@ calculate_path_length <- function(graph, pathset) {
     result
 }
 #' @export
-path_time<- function( pathset,timeBin_x_connections,time="Global",simulator="independent",rho=0.31) {
+path_time<- function( pathset,dataset,time="Global",simulator="independent",rho=0.31) {
   simulator<-tolower(simulator)
-  isTimeBin<-T
-  if(!time %in% c("EveningNight", "EveningRush" , "Weekday"  ,    "MorningRush" , "Weekendday","Global"  )){isTimeBin<-F
-  time <- as.POSIXct( time)
-  start_time <- time
-  time_Bin<-time_bins_readable(time)
-  }else time_Bin<-time
-  arrivetime<-c()
-  result <- vector("list", length(pathset)) 
-  if(length(pathset)==0)stop("the path set is empty!")
-  for (path_idx  in 1:length(pathset)) {
-    path <- pathset[[path_idx]]
-    path<- attr(path,"names")
-    l = length(path)-1
-    if(isTimeBin){time <- 0
-    simulate_time<-0}
-    else{time<-start_time
-    simulate_time<-start_time}
-    if(simulator=="independent")U<-runif(l)
-    else if(simulator=="dependent")U<-dependent_uniform(l,rho)
-    else if(simulator=="first order")U<-first_order_uniform(l,rho)
-    else if(simulator=="second order")U<-second_order_uniform(l,rho)
-    else stop("The simuulator is not supported!")
-    fictional <-c()
-    frequency <-c()
-    label_list <-c()
-    timebinlist<-c()
-    for(i in 1:l){
-      if(!isTimeBin){ time_Bin<-time_bins_readable(time)
-      simulate_time_Bin<-time_bins_readable(simulate_time)}
-      leave <- as.integer(path[i])
-      arrive <- as.integer(path[i+1])
-      edge_data <- timeBin_x_connections[linkID == leave & nextLinkID == arrive & timeBin == time_Bin,]
-      timebinlist[i]<-time_Bin
-      if (nrow(edge_data) == 0) {
-        edge_data <- timeBin_x_connections[linkID == leave & nextLinkID == arrive & timeBin == "Global",]
-        timebinlist[i]<-"Global"
-      }
-      if (nrow(edge_data) == 0)stop(paste("Cannot find statistics from ",leave," to ",arrive," at ",time_Bin))
-      duration <- exp(edge_data$one_way_mean)
-      simulate_duration <- exp(edge_data$one_way_mean+edge_data$one_way_sd*qnorm(U[i]))
-      time <- time+duration
-      simulate_time <- simulate_time+simulate_duration
-      label_list <-c(label_list,paste(leave,"->",arrive))
-      fictional<-c(fictional,edge_data$fictional)
-      frequency<-c(frequency,edge_data$one_way_frequency)
-      names(fictional)<-label_list
-      names(frequency)<-label_list
-      names(timebinlist)<-label_list
-    }
-    if(isTimeBin){
-      result[[path_idx]]<-list(expected_time=time,expected_arrivetime=NA,
-                       simulate_time=simulate_time,sumulate_arrivetime=NA,
-                       timebin=timebinlist,fictional=fictional,frequency=frequency)
-    }else {
-      duration<-as.numeric(difftime(time,start_time,  units = "secs"))
-      simulate_duration<-as.numeric(difftime(simulate_time,start_time,  units = "secs"))
-      result[[path_idx]]<-list(expected_time=duration,expected_arrivetime=time,
-                       simulate_time=simulate_duration,sumulate_arrivetime=simulate_time,
-                       timebin=timebinlist,fictional=fictional,frequency=frequency)
+  isTimeBin<-c(T)
+  multitime<-T
+  if(length(time)==1)multitime<-F
+  else if(length(time)<length(pathset))stop("Length of 'time' must be either 1 or >= the number of paths in 'pathset'.")
+  for (i in 1:length(pathset)) {
+    if(multitime){
+      if(!(time[i] %in% c("EveningNight", "EveningRush" , "Weekday"  ,    "MorningRush" , "Weekendday","Global"  ))){
+        isTimeBin[i]<-F
+      }else isTimeBin[i]<-T
+    }else{
+      if(!(time %in% c("EveningNight", "EveningRush" , "Weekday"  ,    "MorningRush" , "Weekendday","Global"  ))){
+        isTimeBin[i]<-F
+        start_time <- as.POSIXct(time)
+      }else isTimeBin[i]<-T
     }
   }
+  result <- vector("list", length(pathset)) 
+  if(length(pathset)==0)stop("the path set is empty!")
+  if(is.null(dataset$nextLinkID)){
+    for (path_idx  in 1:length(pathset)) {
+      path <- pathset[[path_idx]]
+      path<- attr(path,"names")
+      if(is.null(path))path <- pathset[[path_idx]]
+      if(length(path)<2)stop("the path has edges less than 2!")
+      l = length(path)-1
+      if(isTimeBin[path_idx]){if(multitime)start_time<-time[path_idx]
+      expect_time <- 0
+      simulate_time<-0
+      time_Bin<-time[path_idx]
+      simulate_time_Bin<-time[path_idx]
+      }else{if(multitime)start_time<-as.POSIXct(time[path_idx])
+        expect_time<-start_time
+      simulate_time<-start_time}
+      if(simulator=="independent")U<-runif(l)
+      else if(simulator=="dependent")U<-dependent_uniform(l,rho)
+      else if(simulator=="first order")U<-first_order_uniform(l,rho)
+      else if(simulator=="second order")U<-second_order_uniform(l,rho)
+      else stop("The simulator is not supported!")
+      fictional <-c()
+      frequency <-c()
+      label_list <-c()
+      timebinlist<-c()
+      realtimelist<-c()
+      for(i in 1:l){
+        if(!isTimeBin[path_idx]){ time_Bin<-time_bins_readable(expect_time)
+        simulate_time_Bin<-time_bins_readable(simulate_time)}
+        leave <- as.integer(path[i])
+        arrive <- as.integer(path[i+1])
+        edge_data <- dataset[linkId == leave  & timeBin == time_Bin,]
+        simulate_edge_data <- dataset[linkId == leave  & timeBin == simulate_time_Bin,]
+        timebinlist[i]<-time_Bin
+        if (nrow(edge_data) == 0) {
+          edge_data <- dataset[linkId == leave  & timeBin == "Global",]
+          timebinlist[i]<-"Global"
+        }
+        if (nrow(simulate_edge_data) == 0) {
+          edge_data <- dataset[linkId == leave  & timeBin == "Global",]
+          #timebinlist[i]<-"Global"
+        }
+        if (nrow(edge_data) == 0)stop(paste("Cannot find statistics of edge ",leave))
+        duration <- exp(edge_data$mean)
+        simulate_duration <- exp(edge_data$mean+edge_data$sd*qnorm(U[i]))
+        realtimelist[i] <- duration
+        expect_time <- expect_time+duration
+        simulate_time <- simulate_time+simulate_duration
+        label_list <-c(label_list,paste(leave,"->",arrive))
+        frequency<-c(frequency,edge_data$frequency)
+        names(frequency)<-label_list
+        names(timebinlist)<-label_list
+        names(realtimelist)<-label_list
+      }
+      if(isTimeBin[path_idx]){
+        result[[path_idx]]<-list(expect_time=expect_time,expected_arrivetime=NA,
+                                 simulate_time=simulate_time,simulate_arrivetime=NA,
+                                 timebin=timebinlist,frequency=frequency)
+      }else {
+        duration<-as.numeric(difftime(expect_time,start_time,  units = "secs"))
+        simulate_duration<-as.numeric(difftime(simulate_time,start_time,  units = "secs"))
+        result[[path_idx]]<-list(expect_time=duration,expected_arrivetime=expect_time,
+                                 simulate_time=simulate_duration,simulate_arrivetime=simulate_time,
+                                 timebin=timebinlist,frequency=frequency)
+      }
+    }
+  }else{
+    for (path_idx  in 1:length(pathset)) {
+      path <- pathset[[path_idx]]
+      path<- attr(path,"names")
+      if(is.null(path))path <- pathset[[path_idx]]
+      if(length(path)<2)stop("the path has edges less than 2!")
+      l = length(path)-1
+      if(isTimeBin[path_idx]){if(multitime)start_time<-time[path_idx]
+      expect_time <- 0
+      simulate_time<-0
+      time_Bin<-time[path_idx]
+      simulate_time_Bin<-time[path_idx]
+      }else{if(multitime)start_time<-as.POSIXct(time[path_idx])
+      expect_time<-start_time
+      simulate_time<-start_time}
+      if(simulator=="independent")U<-runif(l)
+      else if(simulator=="dependent")U<-dependent_uniform(l,rho)
+      else if(simulator=="first order")U<-first_order_uniform(l,rho)
+      else if(simulator=="second order")U<-second_order_uniform(l,rho)
+      else stop("The simulator is not supported!")
+      fictional <-c()
+      frequency <-c()
+      label_list <-c()
+      timebinlist<-c()
+      for(i in 1:l){
+        if(!isTimeBin[path_idx]){ time_Bin<-time_bins_readable(expect_time)
+        simulate_time_Bin<-time_bins_readable(simulate_time)}
+        leave <- as.integer(path[i])
+        arrive <- as.integer(path[i+1])
+        edge_data <- timeBin_x_connections[linkID == leave & nextLinkID == arrive & timeBin == time_Bin,]
+        timebinlist[i]<-time_Bin
+        if (nrow(edge_data) == 0) {
+          edge_data <- timeBin_x_connections[linkID == leave & nextLinkID == arrive & timeBin == "Global",]
+          timebinlist[i]<-"Global"
+        }
+        if (nrow(edge_data) == 0)stop(paste("Cannot find statistics from ",leave," to ",arrive))
+        duration <- exp(edge_data$one_way_mean)
+        simulate_duration <- exp(edge_data$one_way_mean+edge_data$one_way_sd*qnorm(U[i]))
+        expect_time <- expect_time+duration
+        simulate_time <- simulate_time+simulate_duration
+        label_list <-c(label_list,paste(leave,"->",arrive))
+        fictional<-c(fictional,edge_data$fictional)
+        frequency<-c(frequency,edge_data$one_way_frequency)
+        names(fictional)<-label_list
+        names(frequency)<-label_list
+        names(timebinlist)<-label_list
+      }
+      if(isTimeBin[path_idx]){
+        result[[path_idx]]<-list(expect_time=expect_time,expected_arrivetime=NA,
+                                 simulate_time=simulate_time,simulate_arrivetime=NA,
+                                 timebin=timebinlist,fictional=fictional,frequency=frequency)
+      }else {
+        duration<-as.numeric(difftime(expect_time,start_time,  units = "secs"))
+        simulate_duration<-as.numeric(difftime(simulate_time,start_time,  units = "secs"))
+        result[[path_idx]]<-list(expect_time=duration,expected_arrivetime=expect_time,
+                                 simulate_time=simulate_duration,simulate_arrivetime=simulate_time,
+                                 timebin=timebinlist,fictional=fictional,frequency=frequency)
+      }
+    }
+  }
+
   return(result)
 }
 #' @export
@@ -209,26 +292,4 @@ path_length<- function( pathset,timeBin_x_connections) {
 
   }
   return(result)
-}
-
-#' @export
-#' @importFrom ggplot2 ggplot stat_ecdf labs coord_cartesian scale_color_manual theme element_rect
-plot_CDF_compare <- function(realtime,simulatetime,simulate_data_name="simulated_data",
-                             x_lab="Total Travel Time (seconds)",title= "CDF of Travel Time",x_max=4000){
-  travel_time <- data.frame(sampled_time=realtime,simulated_time=simulatetime)
-  color_values <- c("sampled data" = "red", simulate_data_name = "black")
-  names(color_values)[2] <- simulate_data_name
-  plot1 <- ggplot2::ggplot(travel_time) +
-    ggplot2::stat_ecdf(ggplot2::aes(x = sampled_time, color = "sampled data")) +
-    ggplot2::stat_ecdf(ggplot2::aes(x = simulated_time, color = simulate_data_name)) +
-    ggplot2::labs(title = title, x = x_lab, y = "Cumulative Probability") +
-    ggplot2::coord_cartesian(xlim = c(0, x_max), ylim = c(0, 1)) +
-    ggplot2::scale_color_manual(name = "Legend", values = color_values) +
-    ggplot2::theme(
-      legend.position = c(0.95, 0.5),
-      legend.justification = c(1, 1),
-      legend.text.align = 0,
-      legend.background = ggplot2::element_rect(color = "black", fill = "white")
-    )
-  plot1
 }

@@ -31,7 +31,7 @@ Expected it contains: trip, linkID, length; time, or duration/logduration+timeBi
 
 \item{duration}{Vector of measured durations of finish the edge.}
 
-\item{log_duration}{Vector of log durations (alternative to \code{duration}).}
+\item{log_duration}{Vector of log durations.}
 }
 \value{
 A \code{data.table} with columns:
@@ -58,6 +58,7 @@ categorized by connection and time bins. It accept both vector input and data ta
 \itemize{
 \item If \code{trips} is provided: Column names are case-insensitive.
 \item If \code{trips} is not provided: All vector parameters must be equal-length
+\item This function will use \code{time} if provided. Otherwise it will use \code{log_duration}, and then \code{duration}.
 }
 
 The input need to fulfill:
@@ -78,7 +79,7 @@ stat2=get_timeBin_x_connections(tripID=trips$trip,time=trips$time,linkId=trips$l
 View(stat2)
 }
 \seealso{
-\code{\link{get_timeBin_x_connections}} Generate time-bin \eqn{\times} connection statistics table from trip data
+\code{\link{get_timeBin_x_edges}} Generate time-bin \eqn{\times} edges statistics table from trip data
 }
 \author{
 Mingze Li \href{mailto:mingzeli7@cmail.carleton.ca}{mingzeli7@cmail.carleton.ca}

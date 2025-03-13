@@ -3,6 +3,7 @@
 S3method(predict,traveltimeCLT)
 S3method(predict,traveltimeCLT.population)
 S3method(predict,traveltimeCLT.trip_specific)
+export(OnDemand_simulator)
 export(calculate_path_length)
 export(dependent_uniform)
 export(findRoute)
