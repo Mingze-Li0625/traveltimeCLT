@@ -37,7 +37,6 @@ NULL
 #' 
 #' The input need to fulfill:
 #' - Time parameters: `timeBin` + (`duration` or `log_duration`), OR `time`.
-#' This function will use time if provided.
 #' - Trip parameters: `trip`, `linkId`, `length`. Column `trip` in trips refer the trip ID.
 #' @seealso \code{\link{get_timeBin_x_connections}} Generate time-bin \eqn{\times} connection statistics table from trip data
 #' @examples
@@ -144,7 +143,8 @@ get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,length=NULL,
 #'   \item \code{one_way_frequency}: Number of observations.
 #'   \item \code{length}: The edge length, calculated by mode.
 #'   \item \code{fictional}: If there is only observation of A -> B, we will also calculate the 
-#'   fictional connection B -> A, and its stats is based on B -> all other edges.
+#'   fictional connection B -> A, and its stats is based on B -> all other edges. In this case, 
+#'   A -> B will get FALSE for fictional, and B -> A will get TRUE.
 #' }
 #'
 #' @details
@@ -154,7 +154,6 @@ get_timeBin_x_edges <- function(trips=NULL,tripID=NULL,linkId=NULL,length=NULL,
 #' 
 #' The input need to fulfill:
 #' - Time parameters: `timeBin` + (`duration` or `log_duration`), OR `time`.
-#' This function will use time if provided.
 #' - Trip parameters: `trip`, `linkId`, `length`. Column `trip` in trips refer the trip ID.
 #' @seealso \code{\link{get_timeBin_x_edges}} Generate time-bin \eqn{\times} edges statistics table from trip data
 #' @examples
