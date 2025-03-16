@@ -47,7 +47,8 @@ to the beginning of next edge.
 \item \code{one_way_frequency}: Number of observations.
 \item \code{length}: The edge length, calculated by mode.
 \item \code{fictional}: If there is only observation of A -> B, we will also calculate the
-fictional connection B -> A, and its stats is based on B -> all other edges.
+fictional connection B -> A, and its stats is based on B -> all other edges. In this case,
+A -> B will get FALSE for fictional, and B -> A will get TRUE.
 }
 }
 \description{
@@ -64,7 +65,6 @@ categorized by connection and time bins. It accept both vector input and data ta
 The input need to fulfill:
 \itemize{
 \item Time parameters: \code{timeBin} + (\code{duration} or \code{log_duration}), OR \code{time}.
-This function will use time if provided.
 \item Trip parameters: \code{trip}, \code{linkId}, \code{length}. Column \code{trip} in trips refer the trip ID.
 }
 }

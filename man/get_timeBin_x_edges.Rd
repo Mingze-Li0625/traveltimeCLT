@@ -60,7 +60,6 @@ categorized by edges and time bins. It accept both vector input and data table (
 The input need to fulfill:
 \itemize{
 \item Time parameters: \code{timeBin} + (\code{duration} or \code{log_duration}), OR \code{time}.
-This function will use time if provided.
 \item Trip parameters: \code{trip}, \code{linkId}, \code{length}. Column \code{trip} in trips refer the trip ID.
 }
 }
