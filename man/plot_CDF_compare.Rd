@@ -33,10 +33,12 @@ A ggplot object displaying compared CDF curves
 This function can plot he CDFs of real data and simulated data together.
 }
 \examples{
- observed <- rchisq(1000,50)
- simulated <- rnorm(800,50,10)
+ observed <- rchisq(10000,50)
+ simulated <- rnorm(10001,50,10)
  plot_CDF_compare(observed, simulated, 
                  simulate_data_name = "model_output",
+                 x_lab="numeric result",
+                 title = "CDF of data",
                  x_max = 100)
 }
 \author{
