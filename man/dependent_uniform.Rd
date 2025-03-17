@@ -43,6 +43,3 @@ acf(x)
 \code{\link{first_order_uniform}} for generating dependent uniform variables with given correlation on first order.
 \code{\link{second_order_uniform}}for generating dependent uniform variables with given correlation on second order.
 }
-\author{
-Mingze Li \href{mailto:mingzeli7@cmail.carleton.ca}{mingzeli7@cmail.carleton.ca}
-}

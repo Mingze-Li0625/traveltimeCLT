@@ -16,14 +16,14 @@ NULL
 #'     \item{fictional - Boolean, indicating if connection is fictional}
 #'   }
 #'
-#' @return A list containing two igraph objects. The one way map has non-fictional data only,
+#' @return A list containing two igraph objects. The one way map uses non-fictional data only,
 #' and the two way map allowing fictional data.
 #' @examples
 #' data(trips)
 #' names(trips)<-c("trip","linkid","timebin","speed","duration","length","time")
 #' stat<-get_timeBin_x_connections(trips)
 #' metric_graph <- get_metric_graph(stat)
-#' 
+#' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @export
 #' @importFrom igraph graph_from_data_frame simplify
 get_metric_graph <- function(timeBin_x_connections){

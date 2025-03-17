@@ -17,7 +17,7 @@ at least need following columns:
 }}
 }
 \value{
-A list containing two igraph objects. The one way map has non-fictional data only,
+A list containing two igraph objects. The one way map uses non-fictional data only,
 and the two way map allowing fictional data.
 }
 \description{
@@ -29,5 +29,7 @@ data(trips)
 names(trips)<-c("trip","linkid","timebin","speed","duration","length","time")
 stat<-get_timeBin_x_connections(trips)
 metric_graph <- get_metric_graph(stat)
-
+}
+\author{
+Mingze Li \href{mailto:mingzeli7@cmail.carleton.ca}{mingzeli7@cmail.carleton.ca}
 }

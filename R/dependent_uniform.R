@@ -31,7 +31,6 @@ NULL
 #' x=dependent_uniform(100, rho = 0.3)
 #' x
 #' acf(x)
-#' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @export
 dependent_uniform<-function(n, rho=0.31) {
   if(n==1)return(runif(1))
@@ -77,7 +76,7 @@ dependent_uniform<-function(n, rho=0.31) {
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @references 
 #'   Nicholas J Higham. 
-#'   \emph{Computing the nearest correlation matrix—a problem from finance}. 
+#'   {Computing the nearest correlation matrix—a problem from finance}. 
 #'   \emph{IMA Journal of Numerical Analysis}, 22(3):329–343, 2002. 
 #'   \url{https://doi.org/10.1093/imanum/22.3.329}
 #' @export
@@ -130,7 +129,7 @@ first_order_uniform<-function(n, rho=0.31) {
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @references 
 #'   Nicholas J Higham. 
-#'   \emph{Computing the nearest correlation matrix—a problem from finance}. 
+#'   {Computing the nearest correlation matrix—a problem from finance}. 
 #'   \emph{IMA Journal of Numerical Analysis}, 22(3):329–343, 2002. 
 #'   \url{https://doi.org/10.1093/imanum/22.3.329}
 #' @export

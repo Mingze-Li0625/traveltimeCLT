@@ -40,7 +40,7 @@ acf(x)
 }
 \references{
 Nicholas J Higham.
-\emph{Computing the nearest correlation matrix—a problem from finance}.
+{Computing the nearest correlation matrix—a problem from finance}.
 \emph{IMA Journal of Numerical Analysis}, 22(3):329–343, 2002.
 \url{https://doi.org/10.1093/imanum/22.3.329}
 }
