@@ -41,6 +41,28 @@ get_metric_graph <- function(timeBin_x_connections){
   g2 <- igraph::simplify(g2, remove.multiple = F, remove.loops = TRUE)
   return(list(one_way_map=g1,two_way_map=g2))
 }
+#' Plot Metric Graphs from a raw trips data
+#'
+#' plot a simplified directed metric graph representations of road networks using the raw trips data. 
+#' 
+#' @param samledtrips A data.table, containing raw trips data. 
+#' The column names are case-insensitive. See \code{\link{get_timeBin_x_connections}}) for more details.
+#' @return A simplified metric graph.
+#' The begging edge of trips would be labeled in green, and the ending node is red. 
+#' If multiple trips used the same edge, such edge will be labeled in yellow. 
+#' If there are more than 6 unlabeled continuous edges, this function will draw only 6 edges.
+#' @details We don't recommend to include too many trips data, as the plot would be too complex, 
+#'   and the process time would be too long.
+#' The input need to fulfill:
+#' - Time parameters: `timeBin` + (`duration` or `log_duration`), OR `time`.
+#' - Trip parameters: `trip`, `linkId`, `length`. Column `trip` in trips refer the trip ID.
+#' @examples
+#' data(trips)
+#' names(trips)<-c("trip","linkid","timebin","speed","duration","length","time")
+#' small_trips <- trips[trips$trip%in%2700:2750,]
+#' p=plot_metric_graph(small_trips)
+#' p
+#' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @export
 #' @importFrom ggraph ggraph geom_edge_link geom_node_point geom_node_text
 #' @importFrom ggplot2 scale_size_manual scale_color_manual theme_void theme

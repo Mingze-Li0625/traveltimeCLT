@@ -1,18 +1,16 @@
-
-
 #' @export
-#' @importFrom igraph E
-calculate_path_length <- function(graph, pathset) {
-    if (length(pathset) < 1) return(numeric(0))
-    result<-c()
-    for (paths in pathset) {
-      edges <- E(graph, path = paths)
-      result<-c(result,sum(edges$weight, na.rm = TRUE))
-    }
-    result
+#' @importFrom igraph k_shortest_paths E
+findRoute <- function(graphs,start, end,k = 1) {
+  g1<-graphs$one_way_map
+  g2<-graphs$two_way_map
+  start <- as.character(start)
+  end <- as.character(end)
+  paths1 <- igraph::k_shortest_paths(g1, from = start, to = end, k = k, mode = "out")$vpaths
+  paths2 <- igraph::k_shortest_paths(g2, from = start, to = end, k = k, mode = "out")$vpaths
+  return(list(oneway = paths1, twoway = paths2))
 }
 #' @export
-path_time<- function( pathset,dataset,time="Global",simulator="independent",rho=0.31) {
+route_time<- function( pathset,dataset,time="Global",simulator="independent",rho=0.31) {
   simulator<-tolower(simulator)
   isTimeBin<-c(T)
   multitime<-T
@@ -160,22 +158,17 @@ path_time<- function( pathset,dataset,time="Global",simulator="independent",rho=
 
   return(result)
 }
+
 #' @export
-#' @importFrom igraph k_shortest_paths
-findRoute <- function(graphs,start, end,k = 1) {
-  g1<-graphs$one_way_map
-  g2<-graphs$two_way_map
-  start <- as.character(start)
-  end <- as.character(end)
-  paths1 <- igraph::k_shortest_paths(g1, from = start, to = end, k = k, mode = "out")$vpaths
-  paths2 <- igraph::k_shortest_paths(g2, from = start, to = end, k = k, mode = "out")$vpaths
-  length1<-calculate_path_length(g1,paths1)
-  length2<-calculate_path_length(g2,paths2)
-  return(list(oneway = paths1,onway_legnth=length1, twoway = paths2,twoway_length=length2))
-}
-#' @export
-path_length<- function( pathset,timeBin_x_connections) {
-  result<-list()
+route_length<- function( pathset,dataset) {
+  result <- vector("list", length(pathset)) 
+  if(length(pathset)==0)stop("the path set is empty!")
+  if(is.null(dataset$nextLinkID)){
+    
+  }else{
+    
+  }
+  
   for (path_idx  in 1:length(pathset)) {
     path <- pathset[[path_idx]]
     path<- attr(path,"names")
@@ -186,15 +179,15 @@ path_length<- function( pathset,timeBin_x_connections) {
     for(i in 1:l){
       leave <- as.integer(path[i])
       arrive <- as.integer(path[i+1])
-      edge_data <- timeBin_x_connections[linkID == leave & nextLinkID == arrive]
+      edge_data <- dataset[linkID == leave & nextLinkID == arrive]
       if (nrow(edge_data) == 0)stop(paste("Cannot find statistics from ",leave," to ",arrive))
-      len <- len+get_mode(edge_data$length)
+      steplength=edge_data[timeBin=="Global",length]
+      len <- len+steplength
       label_list <-c(label_list,paste(leave,"->",arrive))
-      lenlist<-c(lenlist,get_mode(edge_data$length))
+      lenlist<-c(lenlist,steplength)
     }
     names(lenlist)<-label_list
     result[[path_idx]]<-list(total_length=len,length_list=lenlist)
-
   }
   return(result)
 }
