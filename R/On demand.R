@@ -33,6 +33,10 @@
 #'          (\eqn{rho}-controlled), see \code{\link{second_order_uniform}}}
 #'         }
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
+#' @examples
+#' data(trips)
+#' names(trips)<-c("trip","linkid","timebin","speed","duration","length","time")
+#' OnDemand_simulator(c(2700,2701,2702,2716,2726,2732,2738,2739,2744,2746,2747,2748,2755,2757,2769,2788,2790),trips)
 #' @export
 OnDemand_simulator<- function(tripID,trips,timeBin_x_edges=NULL,rho=0.31){
   if (!data.table::is.data.table(trips)) {

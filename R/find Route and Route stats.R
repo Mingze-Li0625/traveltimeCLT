@@ -291,7 +291,7 @@ route_length<- function( pathset,dataset) {
         leave <- as.integer(path[i])
         arrive <- as.integer(path[i+1])
         edge_data <- dataset[linkId == leave & timeBin=="Global" ]
-        if (nrow(edge_data) == 0)stop(paste("Cannot find statistics of the edge ",leave))
+        if (nrow(edge_data) == 0)stop(paste("Cannot find global statistics of the edge ",leave))
         steplength=edge_data$length
         len <- len+steplength
         label_list <-c(label_list,paste(leave,"->",arrive))
@@ -318,7 +318,7 @@ route_length<- function( pathset,dataset) {
         leave <- as.integer(path[i])
         arrive <- as.integer(path[i+1])
         edge_data <- dataset[linkID == leave & nextLinkID == arrive & timeBin=="Global"]
-        if (nrow(edge_data) == 0)stop(paste("Cannot find statistics from ",leave," to ",arrive))
+        if (nrow(edge_data) == 0)stop(paste("Cannot find global statistics from ",leave," to ",arrive))
         steplength=edge_data$length
         len <- len+steplength
         label_list <-c(label_list,paste(leave,"->",arrive))

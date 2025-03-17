@@ -12,10 +12,12 @@
 #' @return A ggplot object displaying compared CDF curves
 #'
 #' @examples
-#'  observed <- rchisq(1000,50)
-#'  simulated <- rnorm(800,50,10)
+#'  observed <- rchisq(10000,50)
+#'  simulated <- rnorm(10001,50,10)
 #'  plot_CDF_compare(observed, simulated, 
 #'                  simulate_data_name = "model_output",
+#'                  x_lab="numeric result",
+#'                  title = "CDF of data",
 #'                  x_max = 100)
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>                
 #' @export
