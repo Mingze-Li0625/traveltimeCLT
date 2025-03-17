@@ -164,30 +164,53 @@ route_length<- function( pathset,dataset) {
   result <- vector("list", length(pathset)) 
   if(length(pathset)==0)stop("the path set is empty!")
   if(is.null(dataset$nextLinkID)){
-    
+    for (path_idx  in 1:length(pathset)) {
+      path <- pathset[[path_idx]]
+      path<- attr(path,"names")
+      if(is.null(path))path <- pathset[[path_idx]]
+      if(length(path)<2)stop("the path has edges less than 2!")
+      l = length(path)-1
+      len=0
+      lenlist=c()
+      label_list <-c()
+      for(i in 1:l){
+        leave <- as.integer(path[i])
+        arrive <- as.integer(path[i+1])
+        edge_data <- dataset[linkId == leave ]
+        if (nrow(edge_data) == 0)stop(paste("Cannot find statistics of the edge ",leave))
+        steplength=edge_data[timeBin=="Global",length]
+        len <- len+steplength
+        label_list <-c(label_list,paste(leave,"->",arrive))
+        lenlist<-c(lenlist,steplength)
+      }
+      names(lenlist)<-label_list
+      result[[path_idx]]<-list(total_length=len,length_list=lenlist)
+    }
+    return(result)
   }else{
-    
+    for (path_idx  in 1:length(pathset)) {
+      path <- pathset[[path_idx]]
+      path<- attr(path,"names")
+      if(is.null(path))path <- pathset[[path_idx]]
+      l = length(path)-1
+      len=0
+      lenlist=c()
+      label_list <-c()
+      for(i in 1:l){
+        leave <- as.integer(path[i])
+        arrive <- as.integer(path[i+1])
+        edge_data <- dataset[linkID == leave & nextLinkID == arrive]
+        if (nrow(edge_data) == 0)stop(paste("Cannot find statistics from ",leave," to ",arrive))
+        steplength=edge_data[timeBin=="Global",length]
+        len <- len+steplength
+        label_list <-c(label_list,paste(leave,"->",arrive))
+        lenlist<-c(lenlist,steplength)
+      }
+      names(lenlist)<-label_list
+      result[[path_idx]]<-list(total_length=len,length_list=lenlist)
+    }
+    return(result)
   }
   
-  for (path_idx  in 1:length(pathset)) {
-    path <- pathset[[path_idx]]
-    path<- attr(path,"names")
-    l = length(path)-1
-    len=0
-    lenlist=c()
-    label_list <-c()
-    for(i in 1:l){
-      leave <- as.integer(path[i])
-      arrive <- as.integer(path[i+1])
-      edge_data <- dataset[linkID == leave & nextLinkID == arrive]
-      if (nrow(edge_data) == 0)stop(paste("Cannot find statistics from ",leave," to ",arrive))
-      steplength=edge_data[timeBin=="Global",length]
-      len <- len+steplength
-      label_list <-c(label_list,paste(leave,"->",arrive))
-      lenlist<-c(lenlist,steplength)
-    }
-    names(lenlist)<-label_list
-    result[[path_idx]]<-list(total_length=len,length_list=lenlist)
-  }
-  return(result)
+
 }
