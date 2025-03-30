@@ -46,8 +46,8 @@ arrive_R <- function(t0,t2,t1,trip_length,K="A",C0=3.17,C1=0.31,C2=0.9,risk_free
 #' 
 #' This function calculates the price of the guarantee at the request time.
 #' 
-#' @param predict_data the data produced by the travelCLT predicting function. Every row match
-#' the information of t1 and t2. Should have a ETA column in second.
+#' @param predict_data the predict data produced by the travelCLT predicting function. Every row match
+#' the information of t1 and t2. Should have a ETA column in second, and a variance column.
 #' @param t1 pick up time, could be a vector.
 #' @param t2 request time, could be a vector.
 #' @param trip_length the length of the trip in meters. This could be a vector.
@@ -61,10 +61,11 @@ arrive_R <- function(t0,t2,t1,trip_length,K="A",C0=3.17,C1=0.31,C2=0.9,risk_free
 #' @examples
 #' 
 #' data <- data.frame(ETA = 1800, variance = 3600)
-#' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,20,3,0.4,1,0.03,0.2)  
+#' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,40,3,0.4,1,0.03,0.2,"abc")  
+#' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,0.8,3,0.4,1,0.03,0.2)
 #' @export
 #' 
-request_R <- function(predict_data,t2,t1,trip_length,K="A",C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302,zeta=0){
+request_R <- function(predict_data,t2,t1,trip_length,K=1,C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302,zeta=0,type="proportion"){
   t1=as.POSIXct(t1)
   t2=as.POSIXct(t2)
   C2 <- C2 / 1000  # 0.9 CAD/km -> 0.0009 CAD/m
@@ -76,8 +77,8 @@ request_R <- function(predict_data,t2,t1,trip_length,K="A",C0=3.17,C1=0.31,C2=0.
   delta_t_seconds <- as.numeric(difftime(t1, t2, units = "sec")) 
   if (!all(delta_t_seconds >= 0)) stop("all t2 must be earlier or equal to t1")
 
-  textK=tolower(as.character(K))
-  if(textK=="a")K=C0+C1*predict_data$ETA+C2*trip_length
+  type=tolower(as.character(type))
+  if(type=="proportion")K=K*(C0+C1*predict_data$ETA+C2*trip_length)
   
   d0 <- C0+C1*predict_data$ETA+C2*trip_length
   d1 <- sqrt(predict_data$variance)
