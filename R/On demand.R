@@ -44,7 +44,7 @@ OnDemand_simulator<- function(tripID,trips,timeBin_x_edges=NULL,rho=0.31){
   }
   names(trips) <- tolower(names(trips))
   if(is.null(trips$time))stop("trips do not have time!")
-  if(is.null(timeBin_x_edges))timeBin_x_edges<-get_timeBin_x_edges(trips)
+  if(is.null(timeBin_x_edges))timeBin_x_edges<-get_timeBin_x_edges(trips[!trip%in%tripID,])
   setnames(trips, 
            old = c( "linkid", "timebin"),
            new = c( "linkId", "timeBin"),

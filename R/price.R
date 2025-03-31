@@ -3,8 +3,10 @@
 #' 
 #' This function calculate the ride price.
 #' 
-#' @param duration the duration of the price in seconds. This could be a vector.
-#' @param trip_length the length of the trip in meters. This could be a vector.
+#' @param duration the duration of the price in seconds. This could be a vector or the 
+#' duration list produced by \code{\link{route_time}} function.
+#' @param trip_length the length of the trip in meters. This could be a vector or the 
+#' duration list produced by \code{\link{route_length}} function.
 #' @param C0 the constant pricing coefficient.
 #' @param C1 the time pricing coefficient, its unit should be CAD/min.
 #' @param C2 the distance pricing coefficient, its unit should be CAD/km.
@@ -17,6 +19,8 @@
 #' @export
 #' @import data.table
 price <- function(duration,trip_length,C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302){
+  if(is.list(duration))duration = sapply(1:length(x_time), function(x) x_time[[x]]$expect_time)
+  if(is.list(trip_length))trip_length = sapply(1:length(x_time), function(x) x_length[[x]]$total_length)
   duration <- as.numeric(duration)
   hour_rate <- (1+risk_free)^(1/(365*24))-1
   arrive_price <- C0+C1*(duration/60)+C2*(trip_length/1000)
@@ -25,22 +29,39 @@ price <- function(duration,trip_length,C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302){
   result <- data.table(result)
   result
 }
+#' Price of the guarantee calculator
 #' 
-#' @param t0 arrive time
-#' @param t1 pick up time
-#' @param t2 request time
-arrive_R <- function(t0,t2,t1,trip_length,K="A",C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302,zeta=0){
+#' This function calculates the price of the guarantee at the arrive time.
+#' 
+#' 
+#' @param t0 arrive time, could be a vector.
+#' @param t1 pick up time, could be a vector.
+#' @param t2 request time, could be a vector.
+#' @param trip_length the length of the trip in meters. This could be a vector.
+#' @param K the promised price. This could be a vector. When type is proportion, this input refer
+#' as the multiple of the expected trip price.
+#' @param C0 the constant pricing coefficient.
+#' @param C1 the time pricing coefficient, its unit should be CAD/min.
+#' @param C2 the distance pricing coefficient, its unit should be CAD/km.
+#' @param risk_free the annual risk free rate, please use real value, like 0.03 for 3% rate.
+#' @param zeta the non-negative constant, refer as the percentage threshold.
+#' @param type Change the K input to multiple of expected trip price if it is equal to "proportion".
+#' @author Mingze Li <mingzeli7@cmail.carleton.ca>
+#' @examples
+#' arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,40,3,0.4,1,0.03,0.2,"")
+#' arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,0.8,3,0.4,1,0.03,0.2)
+#' @export
+arrive_R <- function(t0,t2,t1,trip_length,K=1,C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302,zeta=0,type="proportion"){
   t0=as.POSIXct(t0)
   t1=as.POSIXct(t1)
   t2=as.POSIXct(t2)
-  textK=tolower(as.character(K))
-  arrive_price <- price(difftime(t0,t1,units = "sec"),trip_length,C0,C1,C2,risk_free)[,2]
-  if(textK=="a")K=arrive_price
+  type=tolower(as.character(type))
+  arrive_price <- price(difftime(t0,t1,units = "sec"),trip_length,C0,C1,C2,risk_free)[,1]
+  type=tolower(as.character(type))
+  if(type=="proportion")K=K*arrive_price
   if(arrive_price>=K*exp(zeta))arrive_R <- pmax(0,arrive_price-K)
   else arrive_R <- 0
-  result <- cbind(arrive_R)
-  result <- data.table(result)
-  result
+  arrive_R
 }
 #' Price of the guarantee calculator
 #' 
@@ -51,17 +72,19 @@ arrive_R <- function(t0,t2,t1,trip_length,K="A",C0=3.17,C1=0.31,C2=0.9,risk_free
 #' @param t1 pick up time, could be a vector.
 #' @param t2 request time, could be a vector.
 #' @param trip_length the length of the trip in meters. This could be a vector.
-#' @param K the promised price. This could be a vector.
+#' @param K the promised price. This could be a vector. When type is proportion, this input refer
+#' as the multiple of the expected trip price.
 #' @param C0 the constant pricing coefficient.
 #' @param C1 the time pricing coefficient, its unit should be CAD/min.
 #' @param C2 the distance pricing coefficient, its unit should be CAD/km.
 #' @param risk_free the annual risk free rate, please use real value, like 0.03 for 3% rate.
 #' @param zeta the non-negative constant, refer as the percentage threshold.
+#' @param type Change the K input to multiple of expected trip price if it is equal to "proportion".
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @examples
 #' 
 #' data <- data.frame(ETA = 1800, variance = 3600)
-#' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,40,3,0.4,1,0.03,0.2,"abc")  
+#' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,40,3,0.4,1,0.03,0.2,"")  
 #' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,0.8,3,0.4,1,0.03,0.2)
 #' @export
 #' 
@@ -87,7 +110,7 @@ request_R <- function(predict_data,t2,t1,trip_length,K=1,C0=3.17,C1=0.31,C2=0.9,
   d7 <- predict_data$ETA - r_second * (d1^2) / 2
   discount_factor <- exp(-r_second * delta_t_seconds)
   result <- discount_factor * exp(-r_second * d7) *
-    ((d0 - r_second * C1 * (d1^2) - K) * (1 - pnorm(d5)) - C1 * d1 * dnorm(d5))
+    ((d0 - r_second * C1 * (d1^2) - K) * (1 - pnorm(d5)) + C1 * d1 * dnorm(d5))
   result
 }
 

@@ -14,9 +14,11 @@ price(
 )
 }
 \arguments{
-\item{duration}{the duration of the price in seconds. This could be a vector.}
+\item{duration}{the duration of the price in seconds. This could be a vector or the
+duration list produced by \code{\link{route_time}} function.}
 
-\item{trip_length}{the length of the trip in meters. This could be a vector.}
+\item{trip_length}{the length of the trip in meters. This could be a vector or the
+duration list produced by \code{\link{route_length}} function.}
 
 \item{C0}{the constant pricing coefficient.}
 
