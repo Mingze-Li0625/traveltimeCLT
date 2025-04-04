@@ -271,3 +271,47 @@ get_timeBin_x_connections <- function(trips=NULL,tripID=NULL,linkId=NULL,length=
                         "one_way_sd", "one_way_frequency", "length", "fictional"))
   stats1
 }
+
+#' Transform Route Data Format
+#' 
+#' This function transforms the simulated route data from a data.table format to a list format
+#' containing edge IDs for each trip and start times.
+#' 
+#' @param data A data.table containing route data with columns:
+#'                      \itemize{
+#'                       \item{trip - Trip identifier}
+#'                       \item{linkId - Road segment identifier}
+#'                       \item{start_time - Start time of the trip}
+#'                      }
+#' @return A list containing:
+#'         \itemize{
+#'          \item{edge_ids - A list of vectors, where each vector contains the edge IDs for a trip}
+#'          \item{start_times - A vector of start times for all trips}
+#'         }
+#' @author Mingze Li <mingzeli7@cmail.carleton.ca>
+#' @examples
+#' # First run sample_route to get simulated data
+#' data(trips)
+#' names(trips) <- c("trip", "linkid", "timebin", "speed", "duration", "length", "start_time")
+#' result <- route_format(trips[trip %in% c(2700,2701)])
+#' 
+#' # Transform the simulated data
+#' transformed_data <- route_format(result$simulated_data)
+#' @export
+route_format <- function(data) {
+  # Extract unique trips
+  names(data) <- tolower(names(data))
+  unique_trips <- unique(data$trip)
+  # Create list of edge IDs for each trip
+  edge_ids <- lapply(unique_trips, function(t) {
+    data[trip == t, linkid]
+  })
+  
+  # Extract start times (first occurrence for each trip)
+  start_times <- data[, .(start_time = start_time[1]), by = trip]$start_time
+  
+  return(list(
+    edge_ids = edge_ids,
+    start_times = start_times
+  ))
+}

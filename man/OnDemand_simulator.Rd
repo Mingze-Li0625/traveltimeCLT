@@ -51,6 +51,14 @@ data(trips)
 names(trips)<-c("trip","linkid","timebin","speed","duration","length","time")
 OnDemand_simulator(c(2700,2701,2702,2716,2726,2732,2738,2739,2744,2746,2747,2748,2755,2757,2769,2788,2790),trips)
 }
+\seealso{
+\code{\link{sample_route}} for similar simulation with route length,
+\code{\link{dependent_uniform}} for correlated uniform random number generation,
+\code{\link{first_order_uniform}} for first-order correlated uniform random number generation,
+\code{\link{second_order_uniform}} for second-order correlated uniform random number generation,
+\code{\link{time_bins_readable}} for time bin classification,
+\code{\link{get_timeBin_x_edges}} for edge statistics calculation
+}
 \author{
 Mingze Li \href{mailto:mingzeli7@cmail.carleton.ca}{mingzeli7@cmail.carleton.ca}
 }

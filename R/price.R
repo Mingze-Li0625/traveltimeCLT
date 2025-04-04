@@ -26,7 +26,7 @@ price <- function(duration,trip_length,C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302){
   arrive_price <- C0+C1*(duration/60)+C2*(trip_length/1000)
   start_price <- arrive_price/exp(hour_rate*(duration/3600))
   result <- cbind(arrive_price,start_price)
-  result <- data.table(result)
+  result <- data.frame(result)
   result
 }
 #' Price of the guarantee calculator

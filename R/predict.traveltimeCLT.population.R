@@ -26,7 +26,8 @@ predict.traveltimeCLT.population <- function(N, population_parameters, level = 0
     
     lwr = ETA - q * sig * sqrt(N * (1 + 1/m))
     upr = ETA + q * sig * sqrt(N * (1 + 1/m))
+    var = (sig^2) * N * (1 + 1/m)
 
-    list(ETA = N * mu, lwr = lwr, upr =upr)
+    list(ETA = N * mu, variance = var, lwr = lwr, upr = upr)
 }
 
