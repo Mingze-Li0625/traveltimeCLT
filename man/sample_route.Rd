@@ -43,12 +43,13 @@ for generating simulated routes.}
 \item{rho}{Correlation coefficient (0-1) for dependent uniform generators. Controls the level
 of correlation between consecutive simulated travel times. Default=0.31}
 
-\item{abuse_ratio}{Proportion of trips to apply abuse multiplication (0-1). Default=0.
-If greater than 0, this proportion of trips will have their edge counts multiplied by abuse_multiplier.
-When abuse testing is enabled, only dependent_time and independent_time are calculated for simulation.}
+\item{abuse_ratio}{Proportion of trips to use for sampling (0-1). Default=0.
+If greater than 0, only trips from the abuse_ratio to 1 quantile of tripID will be used for sampling.
+When abuse testing is enabled, only dependent_time and independent_time are calculated for simulation.
+Must be between 0 and 1, otherwise an error will be thrown.}
 
-\item{abuse_multiplier}{Multiplier for edge counts of selected trips. Default=1.
-If not equal to 1, selected trips will have their edge counts multiplied by this value.}
+\item{abuse_multiplier}{Multiplier for edge counts of all sampled trips. Default=1.
+If not equal to 1, all sampled trips will have their edge counts multiplied by this value.}
 }
 \value{
 A list containing three elements:
@@ -93,9 +94,9 @@ names(trips) <- c("trip", "linkid", "timebin", "speed", "duration", "length", "t
 # Run simulation for specific trips
 result <- sample_route(c(2700,2701,2702,2716,2726,2732,2738,2739,2744,2746,2747,2748,2755,2757,2769,2788,2790), trips)
 
-# Run abuse test (only calculates dependent_time and independent_time)
+# Run abuse test with quantile filtering (only calculates dependent_time and independent_time)
 abuse_result <- sample_route(c(2700,2701,2702,2716,2726,2732,2738,2739,2744,2746,2747,2748,2755,2757,2769,2788,2790), 
-                            trips, abuse_ratio=0.3, abuse_multiplier=2)
+                            trips, abuse_ratio=0.3, abuse_multiplier=1.1)
 }
 \seealso{
 \code{\link{OnDemand_simulator}} for similar simulation without route length,
