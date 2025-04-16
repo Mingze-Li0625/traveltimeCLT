@@ -36,7 +36,7 @@
 #'                   When abuse testing is enabled, only dependent_time and independent_time are calculated for simulation.
 #'                   Must be between 0 and 1, otherwise an error will be thrown.
 #' @param abuse_multiplier Multiplier for edge counts of all sampled trips. Default=1.
-#'                       If not equal to 1, all sampled trips will have their edge counts multiplied by this value.
+#'                       All sampled trips will have their edge counts multiplied by this value.
 #' @return A list containing three elements:
 #'         \itemize{
 #'          \item{simulated_result - Summary statistics for simulated routes:

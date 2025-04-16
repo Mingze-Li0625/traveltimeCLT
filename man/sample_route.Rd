@@ -49,7 +49,7 @@ When abuse testing is enabled, only dependent_time and independent_time are calc
 Must be between 0 and 1, otherwise an error will be thrown.}
 
 \item{abuse_multiplier}{Multiplier for edge counts of all sampled trips. Default=1.
-If not equal to 1, all sampled trips will have their edge counts multiplied by this value.}
+All sampled trips will have their edge counts multiplied by this value.}
 }
 \value{
 A list containing three elements:
