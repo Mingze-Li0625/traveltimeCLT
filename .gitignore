@@ -1,3 +1,22 @@
+# R specific files
 .Rproj.user
-/doc/
-/Meta/
+.Rhistory
+.RData
+.Ruserdata
+
+# Data folder and large files
+data/
+*.csv
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

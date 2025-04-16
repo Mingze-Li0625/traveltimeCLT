@@ -31,11 +31,12 @@
 #'              }
 #' @param rho Correlation coefficient (0-1) for dependent uniform generators. Controls the level
 #'            of correlation between consecutive simulated travel times. Default=0.31
-#' @param abuse_ratio Proportion of trips to apply abuse multiplication (0-1). Default=0.
-#'                   If greater than 0, this proportion of trips will have their edge counts multiplied by abuse_multiplier.
+#' @param abuse_ratio Proportion of trips to use for sampling (0-1). Default=0.
+#'                   If greater than 0, only trips from the abuse_ratio to 1 quantile of tripID will be used for sampling.
 #'                   When abuse testing is enabled, only dependent_time and independent_time are calculated for simulation.
-#' @param abuse_multiplier Multiplier for edge counts of selected trips. Default=1.
-#'                       If not equal to 1, selected trips will have their edge counts multiplied by this value.
+#'                   Must be between 0 and 1, otherwise an error will be thrown.
+#' @param abuse_multiplier Multiplier for edge counts of all sampled trips. Default=1.
+#'                       If not equal to 1, all sampled trips will have their edge counts multiplied by this value.
 #' @return A list containing three elements:
 #'         \itemize{
 #'          \item{simulated_result - Summary statistics for simulated routes:
@@ -68,9 +69,9 @@
 #' # Run simulation for specific trips
 #' result <- sample_route(c(2700,2701,2702,2716,2726,2732,2738,2739,2744,2746,2747,2748,2755,2757,2769,2788,2790), trips)
 #' 
-#' # Run abuse test (only calculates dependent_time and independent_time)
+#' # Run abuse test with quantile filtering (only calculates dependent_time and independent_time)
 #' abuse_result <- sample_route(c(2700,2701,2702,2716,2726,2732,2738,2739,2744,2746,2747,2748,2755,2757,2769,2788,2790), 
-#'                             trips, abuse_ratio=0.3, abuse_multiplier=2)
+#'                             trips, abuse_ratio=0.3, abuse_multiplier=1.1)
 #' @seealso \code{\link{OnDemand_simulator}} for similar simulation without route length,
 #' \code{\link{dependent_uniform}} for correlated uniform random number generation,
 #' \code{\link{first_order_uniform}} for first-order correlated uniform random number generation,
@@ -79,6 +80,11 @@
 #' \code{\link{get_timeBin_x_edges}} for edge statistics calculation
 #' @export
 sample_route <- function(tripID, trips, r=NULL, timeBin_x_edges=NULL, rho=0.31, abuse_ratio=0, abuse_multiplier=1) {
+  # Validate abuse_ratio is between 0 and 1
+  if(abuse_ratio < 0 || abuse_ratio > 1) {
+    stop("abuse_ratio must be between 0 and 1")
+  }
+  
   if (!data.table::is.data.table(trips)) {
     data.table::setDT(trips)
   }
@@ -103,16 +109,35 @@ sample_route <- function(tripID, trips, r=NULL, timeBin_x_edges=NULL, rho=0.31, 
   real_edge_count <- trips[trip %in% tripID, .(length(time)), trip]$V1
   real_start_time <- trips[trip %in% tripID, .(time[1]), trip]$V1
 
+  # If abuse_ratio > 0, filter trips based on quantile
+  if(abuse_ratio > 0) {
+    # Calculate quantiles of trip lengths
+    trip_lengths <- trips[trip %in% tripID, .(length = sum(length)), by = trip]
+    trip_lengths[, quantile := rank(length) / .N]
+    
+    # Filter trips based on abuse_ratio quantile
+    filtered_tripID <- trip_lengths[quantile >= abuse_ratio, trip]
+    
+    # If no trips meet the criteria, stop with an error
+    if(length(filtered_tripID) == 0) {
+      stop("No trips found in the specified quantile range (abuse_ratio to 1). Please adjust the abuse_ratio parameter.")
+    }
+    
+    # Update real trip statistics with filtered trips
+    real_time <- as.numeric(trips[trip %in% filtered_tripID, .(difftime(time[.N],time[1],units="secs")), trip]$V1)
+    real_length <- trips[trip %in% filtered_tripID, .(sum(length)), trip]$V1
+    real_edge_count <- trips[trip %in% filtered_tripID, .(length(time)), trip]$V1
+    real_start_time <- trips[trip %in% filtered_tripID, .(time[1]), trip]$V1
+  }
+
   # Generate simulated trips with random edge counts
   simulated_edge_num <- trips[, .(trip = 1:r,
     len = sample(real_edge_count, r, replace=TRUE))]
   
-  # Apply abuse multiplication if specified
-  if(abuse_ratio > 0 && abuse_multiplier !=1) {
-    # Select trips to apply abuse
-    abuse_trips <- sample(1:r, size = ceiling(r * abuse_ratio), replace = FALSE)
-    # Multiply edge counts for selected trips
-    simulated_edge_num[trip %in% abuse_trips, len := ceiling(len * abuse_multiplier)]
+  # Apply abuse multiplier to all trips if specified
+  if(abuse_multiplier != 1) {
+    # Multiply edge counts for all trips
+    simulated_edge_num[, len := ceiling(len * abuse_multiplier)]
   }
   
   simulated_data <- simulated_edge_num[, .(trip = rep(trip, len)), by = trip]
