@@ -1,11 +1,10 @@
-
 #' Ride pricing calculator
-#' 
+#'
 #' This function calculate the ride price.
-#' 
-#' @param duration the duration of the price in seconds. This could be a vector or the 
+#'
+#' @param duration the duration of the price in seconds. This could be a vector or the
 #' duration list produced by \code{\link{route_time}} function.
-#' @param trip_length the length of the trip in meters. This could be a vector or the 
+#' @param trip_length the length of the trip in meters. This could be a vector or the
 #' duration list produced by \code{\link{route_length}} function.
 #' @param C0 the constant pricing coefficient.
 #' @param C1 the time pricing coefficient, its unit should be CAD/min.
@@ -14,26 +13,26 @@
 #' @return a data.table, the first column is the price when the trip finished, and
 #'  the second is the price when the trip begin.
 #' @examples
-#' price(c(10000,20000),c(100000,200000),4,0.4,0.8,0.03)
+#' price(c(10000, 20000), c(100000, 200000), 4, 0.4, 0.8, 0.03)
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @export
 #' @import data.table
-price <- function(duration,trip_length,C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302){
-  if(is.list(duration))duration = sapply(1:length(x_time), function(x) x_time[[x]]$expect_time)
-  if(is.list(trip_length))trip_length = sapply(1:length(x_time), function(x) x_length[[x]]$total_length)
+price <- function(duration, trip_length, C0 = 3.17, C1 = 0.31, C2 = 0.9, risk_free = 0.0302) {
+  if (is.list(duration)) duration <- sapply(1:length(x_time), function(x) x_time[[x]]$expect_time)
+  if (is.list(trip_length)) trip_length <- sapply(1:length(x_time), function(x) x_length[[x]]$total_length)
   duration <- as.numeric(duration)
-  hour_rate <- (1+risk_free)^(1/(365*24))-1
-  arrive_price <- C0+C1*(duration/60)+C2*(trip_length/1000)
-  start_price <- arrive_price/exp(hour_rate*(duration/3600))
-  result <- cbind(arrive_price,start_price)
+  hour_rate <- (1 + risk_free)^(1 / (365 * 24)) - 1
+  arrive_price <- C0 + C1 * (duration / 60) + C2 * (trip_length / 1000)
+  start_price <- arrive_price / exp(hour_rate * (duration / 3600))
+  result <- cbind(arrive_price, start_price)
   result <- data.frame(result)
   result
 }
 #' Price of the guarantee calculator
-#' 
+#'
 #' This function calculates the price of the guarantee at the arrive time.
-#' 
-#' 
+#'
+#'
 #' @param t0 arrive time, could be a vector.
 #' @param t1 pick up time, could be a vector.
 #' @param t2 request time, could be a vector.
@@ -48,25 +47,28 @@ price <- function(duration,trip_length,C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302){
 #' @param type Change the K input to multiple of expected trip price if it is equal to "proportion".
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @examples
-#' arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,40,3,0.4,1,0.03,0.2,"")
-#' arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,0.8,3,0.4,1,0.03,0.2)
+#' arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33, 40, 3, 0.4, 1, 0.03, 0.2, "")
+#' arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33, 0.8, 3, 0.4, 1, 0.03, 0.2)
 #' @export
-arrive_R <- function(t0,t2,t1,trip_length,K=1,C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302,zeta=0,type="proportion"){
-  t0=as.POSIXct(t0)
-  t1=as.POSIXct(t1)
-  t2=as.POSIXct(t2)
-  type=tolower(as.character(type))
-  arrive_price <- price(difftime(t0,t1,units = "sec"),trip_length,C0,C1,C2,risk_free)[,1]
-  type=tolower(as.character(type))
-  if(type=="proportion")K=K*arrive_price
-  if(arrive_price>=K*exp(zeta))arrive_R <- pmax(0,arrive_price-K)
-  else arrive_R <- 0
+arrive_R <- function(t0, t2, t1, trip_length, K = 1, C0 = 3.17, C1 = 0.31, C2 = 0.9, risk_free = 0.0302, zeta = 0, type = "proportion") {
+  t0 <- as.POSIXct(t0)
+  t1 <- as.POSIXct(t1)
+  t2 <- as.POSIXct(t2)
+  type <- tolower(as.character(type))
+  arrive_price <- price(difftime(t0, t1, units = "sec"), trip_length, C0, C1, C2, risk_free)[, 1]
+  type <- tolower(as.character(type))
+  if (type == "proportion") K <- K * arrive_price
+  if (arrive_price >= K * exp(zeta)) {
+    arrive_R <- pmax(0, arrive_price - K)
+  } else {
+    arrive_R <- 0
+  }
   arrive_R
 }
 #' Price of the guarantee calculator
-#' 
+#'
 #' This function calculates the price of the guarantee at the request time.
-#' 
+#'
 #' @param predict_data the predict data produced by the travelCLT predicting function. Every row match
 #' the information of t1 and t2. Should have a ETA column in second, and a variance column.
 #' @param t1 pick up time, could be a vector.
@@ -82,28 +84,28 @@ arrive_R <- function(t0,t2,t1,trip_length,K=1,C0=3.17,C1=0.31,C2=0.9,risk_free=0
 #' @param type Change the K input to multiple of expected trip price if it is equal to "proportion".
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @examples
-#' 
+#'
 #' data <- data.frame(ETA = 1800, variance = 3600)
-#' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,40,3,0.4,1,0.03,0.2,"")  
-#' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,0.8,3,0.4,1,0.03,0.2)
+#' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33, 40, 3, 0.4, 1, 0.03, 0.2, "")
+#' request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33, 0.8, 3, 0.4, 1, 0.03, 0.2)
 #' @export
-#' 
-request_R <- function(predict_data,t2,t1,trip_length,K=1,C0=3.17,C1=0.31,C2=0.9,risk_free=0.0302,zeta=0,type="proportion"){
-  t1=as.POSIXct(t1)
-  t2=as.POSIXct(t2)
-  C2 <- C2 / 1000  # 0.9 CAD/km -> 0.0009 CAD/m
-  C1 <- C1 / 60    # 0.31 CAD/min -> ~0.0051667 CAD/sec
-  
+#'
+request_R <- function(predict_data, t2, t1, trip_length, K = 1, C0 = 3.17, C1 = 0.31, C2 = 0.9, risk_free = 0.0302, zeta = 0, type = "proportion") {
+  t1 <- as.POSIXct(t1)
+  t2 <- as.POSIXct(t2)
+  C2 <- C2 / 1000 # 0.9 CAD/km -> 0.0009 CAD/m
+  C1 <- C1 / 60 # 0.31 CAD/min -> ~0.0051667 CAD/sec
+
   seconds_per_year <- 365 * 24 * 3600
   r_annual <- log(1 + risk_free)
   r_second <- r_annual / seconds_per_year
-  delta_t_seconds <- as.numeric(difftime(t1, t2, units = "sec")) 
+  delta_t_seconds <- as.numeric(difftime(t1, t2, units = "sec"))
   if (!all(delta_t_seconds >= 0)) stop("all t2 must be earlier or equal to t1")
 
-  type=tolower(as.character(type))
-  if(type=="proportion")K=K*(C0+C1*predict_data$ETA+C2*trip_length)
-  
-  d0 <- C0+C1*predict_data$ETA+C2*trip_length
+  type <- tolower(as.character(type))
+  if (type == "proportion") K <- K * (C0 + C1 * predict_data$ETA + C2 * trip_length)
+
+  d0 <- C0 + C1 * predict_data$ETA + C2 * trip_length
   d1 <- sqrt(predict_data$variance)
   d4 <- (K * exp(zeta) - d0) / (C1 * d1)
   d5 <- d4 + r_second * d1
@@ -113,4 +115,41 @@ request_R <- function(predict_data,t2,t1,trip_length,K=1,C0=3.17,C1=0.31,C2=0.9,
     ((d0 - r_second * C1 * (d1^2) - K) * (1 - pnorm(d5)) + C1 * d1 * dnorm(d5))
   result
 }
+#' Price of the trip at request time calculator
+#'
+#' This function calculates the price related to K at the request time by discounting
+#' the expected price based on the risk-free rate and the time difference between
+#' the pickup and request times.
+#'
+#' @param predict_data A data frame containing the predicted data produced by the travelCLT
+#' predicting function. It should have an ETA column in seconds.
+#' @param t1 Pickup time, could be a vector.
+#' @param t2 Request time, could be a vector.
+#' @param trip_length The length of the trip in meters. This could be a vector.
+#' @param C0 The constant pricing coefficient (default is 3.17).
+#' @param C1 The time pricing coefficient, its unit should be CAD/min (default is 0.31).
+#' @param C2 The distance pricing coefficient, its unit should be CAD/km (default is 0.9).
+#' @param risk_free The annual risk-free rate, please use real value, like 0.03 for 3% rate (default is 0.0302).
+#' @return A numeric vector representing the calculated price related to K after discounting.
+#' @author Mingze Li <mingzeli7@cmail.carleton.ca>
+#' @examples
+#' data <- data.frame(ETA = 1800)
+#' request_K(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33)
+#' @export
+request_K <- function(predict_data, t2, t1, trip_length, C0 = 3.17, C1 = 0.31, C2 = 0.9, risk_free = 0.0302) {
+  t1 <- as.POSIXct(t1)
+  t2 <- as.POSIXct(t2)
+  C2 <- C2 / 1000 # 0.9 CAD/km -> 0.0009 CAD/m
+  C1 <- C1 / 60 # 0.31 CAD/min -> ~0.0051667 CAD/sec
 
+  seconds_per_year <- 365 * 24 * 3600
+  r_annual <- log(1 + risk_free)
+  r_second <- r_annual / seconds_per_year
+  delta_t_seconds <- as.numeric(difftime(t1, t2, units = "sec"))
+  if (!all(delta_t_seconds >= 0)) stop("all t2 must be earlier or equal to t1")
+  discount_factor <- exp(-r_second * delta_t_seconds)
+  K <- C0 + C1 * predict_data$ETA + C2 * trip_length
+  request_K <- K * discount_factor
+
+  return(request_K)
+}

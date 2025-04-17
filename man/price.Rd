@@ -36,7 +36,7 @@ the second is the price when the trip begin.
 This function calculate the ride price.
 }
 \examples{
-price(c(10000,20000),c(100000,200000),4,0.4,0.8,0.03)
+price(c(10000, 20000), c(100000, 200000), 4, 0.4, 0.8, 0.03)
 }
 \author{
 Mingze Li \href{mailto:mingzeli7@cmail.carleton.ca}{mingzeli7@cmail.carleton.ca}

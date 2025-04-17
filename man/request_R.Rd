@@ -49,8 +49,8 @@ This function calculates the price of the guarantee at the request time.
 \examples{
 
 data <- data.frame(ETA = 1800, variance = 3600)
-request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,40,3,0.4,1,0.03,0.2,"")  
-request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,0.8,3,0.4,1,0.03,0.2)
+request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33, 40, 3, 0.4, 1, 0.03, 0.2, "")
+request_R(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33, 0.8, 3, 0.4, 1, 0.03, 0.2)
 }
 \author{
 Mingze Li \href{mailto:mingzeli7@cmail.carleton.ca}{mingzeli7@cmail.carleton.ca}

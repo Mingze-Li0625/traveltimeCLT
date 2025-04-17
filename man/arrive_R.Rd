@@ -46,8 +46,8 @@ as the multiple of the expected trip price.}
 This function calculates the price of the guarantee at the arrive time.
 }
 \examples{
-arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,40,3,0.4,1,0.03,0.2,"")
-arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33,0.8,3,0.4,1,0.03,0.2)
+arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33, 40, 3, 0.4, 1, 0.03, 0.2, "")
+arrive_R("2023-01-01 09:00:00", "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33, 0.8, 3, 0.4, 1, 0.03, 0.2)
 }
 \author{
 Mingze Li \href{mailto:mingzeli7@cmail.carleton.ca}{mingzeli7@cmail.carleton.ca}

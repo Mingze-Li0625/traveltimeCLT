@@ -92,11 +92,13 @@ data(trips)
 names(trips) <- c("trip", "linkid", "timebin", "speed", "duration", "length", "time")
 
 # Run simulation for specific trips
-result <- sample_route(c(2700,2701,2702,2716,2726,2732,2738,2739,2744,2746,2747,2748,2755,2757,2769,2788,2790), trips)
+result <- sample_route(c(2700, 2701, 2702, 2716, 2726, 2732, 2738, 2739, 2744, 2746, 2747, 2748, 2755, 2757, 2769, 2788, 2790), trips)
 
 # Run abuse test with quantile filtering (only calculates dependent_time and independent_time)
-abuse_result <- sample_route(c(2700,2701,2702,2716,2726,2732,2738,2739,2744,2746,2747,2748,2755,2757,2769,2788,2790), 
-                            trips, abuse_ratio=0.3, abuse_multiplier=1.1)
+abuse_result <- sample_route(c(2700, 2701, 2702, 2716, 2726, 2732, 2738, 2739, 2744, 2746, 2747, 2748, 2755, 2757, 2769, 2788, 2790),
+  trips,
+  abuse_ratio = 0.3, abuse_multiplier = 1.1
+)
 }
 \seealso{
 \code{\link{OnDemand_simulator}} for similar simulation without route length,
