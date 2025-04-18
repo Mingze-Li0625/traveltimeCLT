@@ -2,7 +2,7 @@
 % Please edit documentation in R/price.R
 \name{request_K}
 \alias{request_K}
-\title{Price of the trip at request time calculator}
+\title{Trip price calculator (request time)}
 \usage{
 request_K(
   predict_data,
@@ -16,30 +16,27 @@ request_K(
 )
 }
 \arguments{
-\item{predict_data}{A data frame containing the predicted data produced by the travelCLT
-predicting function. It should have an ETA column in seconds.}
+\item{predict_data}{data.frame Prediction data containing ETA (seconds)}
 
-\item{t2}{Request time, could be a vector.}
+\item{t2}{POSIXct|character Service request time(s)}
 
-\item{t1}{Pickup time, could be a vector.}
+\item{t1}{POSIXct|character Scheduled pickup time(s)}
 
-\item{trip_length}{The length of the trip in meters. This could be a vector.}
+\item{trip_length}{numeric Trip distance in meters}
 
-\item{C0}{The constant pricing coefficient (default is 3.17).}
+\item{C0}{numeric Base fare (CAD)}
 
-\item{C1}{The time pricing coefficient, its unit should be CAD/min (default is 0.31).}
+\item{C1}{numeric Time rate (CAD/minute)}
 
-\item{C2}{The distance pricing coefficient, its unit should be CAD/km (default is 0.9).}
+\item{C2}{numeric Distance rate (CAD/kilometer)}
 
-\item{risk_free}{The annual risk-free rate, please use real value, like 0.03 for 3\% rate (default is 0.0302).}
+\item{risk_free}{numeric Annual risk-free rate (e.g., 0.03 for 3\%)}
 }
 \value{
-A numeric vector representing the calculated price related to K after discounting.
+numeric Vector of discounted prices
 }
 \description{
-This function calculates the price related to K at the request time by discounting
-the expected price based on the risk-free rate and the time difference between
-the pickup and request times.
+Calculate discounted trip price at service request time
 }
 \examples{
 data <- data.frame(ETA = 1800)

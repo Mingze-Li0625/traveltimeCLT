@@ -2,7 +2,7 @@
 % Please edit documentation in R/price.R
 \name{request_R}
 \alias{request_R}
-\title{Price of the guarantee calculator}
+\title{Guarantee pricing calculator (request time)}
 \usage{
 request_R(
   predict_data,
@@ -19,32 +19,36 @@ request_R(
 )
 }
 \arguments{
-\item{predict_data}{the predict data produced by the travelCLT predicting function. Every row match
-the information of t1 and t2. Should have a ETA column in second, and a variance column.}
+\item{predict_data}{data.frame Prediction data from travelCLT containing:
+- ETA: predicted time in seconds
+- variance: predicted time variance}
 
-\item{t2}{request time, could be a vector.}
+\item{t2}{POSIXct|character Service request time(s)}
 
-\item{t1}{pick up time, could be a vector.}
+\item{t1}{POSIXct|character Scheduled pickup time(s)}
 
-\item{trip_length}{the length of the trip in meters. This could be a vector.}
+\item{trip_length}{numeric Trip distance in meters}
 
-\item{K}{the promised price. This could be a vector. When type is proportion, this input refer
-as the multiple of the expected trip price.}
+\item{K}{numeric Guaranteed price threshold. When \code{type = "proportion"},
+represents multiple of expected price}
 
-\item{C0}{the constant pricing coefficient.}
+\item{C0}{numeric Base fare (CAD)}
 
-\item{C1}{the time pricing coefficient, its unit should be CAD/min.}
+\item{C1}{numeric Time rate (CAD/minute)}
 
-\item{C2}{the distance pricing coefficient, its unit should be CAD/km.}
+\item{C2}{numeric Distance rate (CAD/kilometer)}
 
-\item{risk_free}{the annual risk free rate, please use real value, like 0.03 for 3\% rate.}
+\item{risk_free}{numeric Annual risk-free rate (e.g., 0.03 for 3\%)}
 
-\item{zeta}{the non-negative constant, refer as the percentage threshold.}
+\item{zeta}{numeric Non-negative price protection threshold}
 
-\item{type}{Change the K input to multiple of expected trip price if it is equal to "proportion".}
+\item{type}{character Pricing type: "proportion" scales K by expected price}
+}
+\value{
+numeric Vector of guarantee prices
 }
 \description{
-This function calculates the price of the guarantee at the request time.
+Calculate guarantee price at service request time using travel time predictions
 }
 \examples{
 

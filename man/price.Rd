@@ -14,26 +14,27 @@ price(
 )
 }
 \arguments{
-\item{duration}{the duration of the price in seconds. This could be a vector or the
-duration list produced by \code{\link{route_time}} function.}
+\item{duration}{numeric|list Trip duration in seconds. If list, expects output
+from \code{\link{route_time}} list containing \code{expect_time} elements}
 
-\item{trip_length}{the length of the trip in meters. This could be a vector or the
-duration list produced by \code{\link{route_length}} function.}
+\item{trip_length}{numeric|list Trip distance in meters. If list, expects output
+from \code{\link{route_length}} containing \code{total_length} elements}
 
-\item{C0}{the constant pricing coefficient.}
+\item{C0}{numeric Base fare (CAD)}
 
-\item{C1}{the time pricing coefficient, its unit should be CAD/min.}
+\item{C1}{numeric Time rate (CAD/minute)}
 
-\item{C2}{the distance pricing coefficient, its unit should be CAD/km.}
+\item{C2}{numeric Distance rate (CAD/kilometer)}
 
-\item{risk_free}{the annual risk free rate, please use real value, like 0.03 for 3\% rate.}
+\item{risk_free}{numeric Annual risk-free rate (e.g., 0.03 for 3\%)}
 }
 \value{
-a data.table, the first column is the price when the trip finished, and
-the second is the price when the trip begin.
+data.frame with two columns:
+- arrive_price: Price charged upon trip completion
+- start_price: Price charged when trip begins
 }
 \description{
-This function calculate the ride price.
+Calculate ride prices based on duration and distance
 }
 \examples{
 price(c(10000, 20000), c(100000, 200000), 4, 0.4, 0.8, 0.03)

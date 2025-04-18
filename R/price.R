@@ -1,25 +1,26 @@
 #' Ride pricing calculator
 #'
-#' This function calculate the ride price.
+#' Calculate ride prices based on duration and distance
 #'
-#' @param duration the duration of the price in seconds. This could be a vector or the
-#' duration list produced by \code{\link{route_time}} function.
-#' @param trip_length the length of the trip in meters. This could be a vector or the
-#' duration list produced by \code{\link{route_length}} function.
-#' @param C0 the constant pricing coefficient.
-#' @param C1 the time pricing coefficient, its unit should be CAD/min.
-#' @param C2 the distance pricing coefficient, its unit should be CAD/km.
-#' @param risk_free the annual risk free rate, please use real value, like 0.03 for 3% rate.
-#' @return a data.table, the first column is the price when the trip finished, and
-#'  the second is the price when the trip begin.
+#' @param duration numeric|list Trip duration in seconds. If list, expects output
+#'        from \code{\link{route_time}} list containing `expect_time` elements
+#' @param trip_length numeric|list Trip distance in meters. If list, expects output
+#'        from \code{\link{route_length}} containing `total_length` elements
+#' @param C0 numeric Base fare (CAD)
+#' @param C1 numeric Time rate (CAD/minute)
+#' @param C2 numeric Distance rate (CAD/kilometer)
+#' @param risk_free numeric Annual risk-free rate (e.g., 0.03 for 3%)
+#' @return data.frame with two columns:
+#'         - arrive_price: Price charged upon trip completion
+#'         - start_price: Price charged when trip begins
 #' @examples
 #' price(c(10000, 20000), c(100000, 200000), 4, 0.4, 0.8, 0.03)
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @export
 #' @import data.table
 price <- function(duration, trip_length, C0 = 3.17, C1 = 0.31, C2 = 0.9, risk_free = 0.0302) {
-  if (is.list(duration)) duration <- sapply(1:length(x_time), function(x) x_time[[x]]$expect_time)
-  if (is.list(trip_length)) trip_length <- sapply(1:length(x_time), function(x) x_length[[x]]$total_length)
+  if (is.list(duration)) duration <- sapply(duration, function(x) x$expect_time)
+  if (is.list(trip_length)) trip_length <- sapply(trip_length, function(x) x$total_length)
   duration <- as.numeric(duration)
   hour_rate <- (1 + risk_free)^(1 / (365 * 24)) - 1
   arrive_price <- C0 + C1 * (duration / 60) + C2 * (trip_length / 1000)
@@ -65,23 +66,25 @@ arrive_R <- function(t0, t2, t1, trip_length, K = 1, C0 = 3.17, C1 = 0.31, C2 = 
   }
   arrive_R
 }
-#' Price of the guarantee calculator
+#' Guarantee pricing calculator (request time)
 #'
-#' This function calculates the price of the guarantee at the request time.
+#' Calculate guarantee price at service request time using travel time predictions
 #'
-#' @param predict_data the predict data produced by the travelCLT predicting function. Every row match
-#' the information of t1 and t2. Should have a ETA column in second, and a variance column.
-#' @param t1 pick up time, could be a vector.
-#' @param t2 request time, could be a vector.
-#' @param trip_length the length of the trip in meters. This could be a vector.
-#' @param K the promised price. This could be a vector. When type is proportion, this input refer
-#' as the multiple of the expected trip price.
-#' @param C0 the constant pricing coefficient.
-#' @param C1 the time pricing coefficient, its unit should be CAD/min.
-#' @param C2 the distance pricing coefficient, its unit should be CAD/km.
-#' @param risk_free the annual risk free rate, please use real value, like 0.03 for 3% rate.
-#' @param zeta the non-negative constant, refer as the percentage threshold.
-#' @param type Change the K input to multiple of expected trip price if it is equal to "proportion".
+#' @param predict_data data.frame Prediction data from travelCLT containing:
+#'        - ETA: predicted time in seconds
+#'        - variance: predicted time variance
+#' @param t1 POSIXct|character Scheduled pickup time(s)
+#' @param t2 POSIXct|character Service request time(s)
+#' @param trip_length numeric Trip distance in meters
+#' @param K numeric Guaranteed price threshold. When `type = "proportion"`,
+#'        represents multiple of expected price
+#' @param C0 numeric Base fare (CAD)
+#' @param C1 numeric Time rate (CAD/minute)
+#' @param C2 numeric Distance rate (CAD/kilometer)
+#' @param risk_free numeric Annual risk-free rate (e.g., 0.03 for 3%)
+#' @param zeta numeric Non-negative price protection threshold
+#' @param type character Pricing type: "proportion" scales K by expected price
+#' @return numeric Vector of guarantee prices
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @examples
 #'
@@ -115,22 +118,19 @@ request_R <- function(predict_data, t2, t1, trip_length, K = 1, C0 = 3.17, C1 = 
     ((d0 - r_second * C1 * (d1^2) - K) * (1 - pnorm(d5)) + C1 * d1 * dnorm(d5))
   result
 }
-#' Price of the trip at request time calculator
+#' Trip price calculator (request time)
 #'
-#' This function calculates the price related to K at the request time by discounting
-#' the expected price based on the risk-free rate and the time difference between
-#' the pickup and request times.
+#' Calculate discounted trip price at service request time
 #'
-#' @param predict_data A data frame containing the predicted data produced by the travelCLT
-#' predicting function. It should have an ETA column in seconds.
-#' @param t1 Pickup time, could be a vector.
-#' @param t2 Request time, could be a vector.
-#' @param trip_length The length of the trip in meters. This could be a vector.
-#' @param C0 The constant pricing coefficient (default is 3.17).
-#' @param C1 The time pricing coefficient, its unit should be CAD/min (default is 0.31).
-#' @param C2 The distance pricing coefficient, its unit should be CAD/km (default is 0.9).
-#' @param risk_free The annual risk-free rate, please use real value, like 0.03 for 3% rate (default is 0.0302).
-#' @return A numeric vector representing the calculated price related to K after discounting.
+#' @param predict_data data.frame Prediction data containing ETA (seconds)
+#' @param t1 POSIXct|character Scheduled pickup time(s)
+#' @param t2 POSIXct|character Service request time(s)
+#' @param trip_length numeric Trip distance in meters
+#' @param C0 numeric Base fare (CAD)
+#' @param C1 numeric Time rate (CAD/minute)
+#' @param C2 numeric Distance rate (CAD/kilometer)
+#' @param risk_free numeric Annual risk-free rate (e.g., 0.03 for 3%)
+#' @return numeric Vector of discounted prices
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @examples
 #' data <- data.frame(ETA = 1800)
