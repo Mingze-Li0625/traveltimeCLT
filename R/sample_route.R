@@ -4,9 +4,6 @@
 #' and information from time-bin \eqn{\times} edge statistics. It provides multiple simulation methods
 #' including dependent, independent, first-order, and second-order correlated uniform simulation.
 #'
-#' When abuse testing is enabled (abuse_ratio > 0 || lambda != 0), the function
-#' optimizes performance by only calculating the dependent_time and independent_time simulations,
-#' while setting other simulation results to NA.
 #'
 #' @param tripID Vector of trip identifiers to analyze. These trips will be used as templates
 #'               for generating simulated routes.
@@ -34,7 +31,6 @@
 #'            of correlation between consecutive simulated travel times. Default=0.31
 #' @param abuse_ratio Proportion of abuse simulation (0-1). Default=0.
 #'                   If greater than 0, only trips from the abuse_ratio to 1 quantile of trips data will be used for sampling.
-#'                   When abuse testing is enabled (abuse_ratio > 0 OR lambda != 0), only dependent_time and independent_time are calculated for simulation.
 #'                   Must be between 0 and 1, otherwise an error will be thrown.
 #' @param lambda Proportion of trips to apply abuse simulation. Default=0.
 #' @return A list containing three elements:
@@ -43,8 +39,8 @@
 #'          \itemize{
 #'           \item{dependent_time - Simulated time using correlated uniform sampling}
 #'           \item{independent_time - Simulated time using independent uniform sampling}
-#'           \item{first_order_time - Simulated time using first-order correlated sampling (NA when abuse testing is enabled)}
-#'           \item{second_order_time - Simulated time using second-order correlated sampling (NA when abuse testing is enabled)}
+#'           \item{first_order_time - Simulated time using first-order correlated uniform sampling}
+#'           \item{second_order_time - Simulated time using second-order correlated uniform sampling}
 #'           \item{simulated_length - Simulated total route length}
 #'          }}
 #'          \item{real_result - Summary statistics for real routes:
@@ -74,7 +70,7 @@
 #'   trips, r=50,
 #'   abuse_ratio = 0.3, lambda = 0.5
 #' )
-#' @seealso \code{\link{OnDemand_simulator}} for similar simulation without route length,
+#' @seealso \code{\link{OnDemand_simulator}} for simulation with given routes,
 #' \code{\link{dependent_uniform}} for correlated uniform random number generation,
 #' \code{\link{first_order_uniform}} for first-order correlated uniform random number generation,
 #' \code{\link{second_order_uniform}} for second-order correlated uniform random number generation,

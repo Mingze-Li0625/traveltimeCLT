@@ -47,8 +47,7 @@ of correlation between consecutive simulated travel times. Default=0.31}
 \item{lambda}{Proportion of trips to apply abuse simulation. Default=0.}
 
 \item{abuse_ratio}{Proportion of abuse simulation (0-1). Default=0.
-If greater than 0, only trips from the abuse_ratio to 1 quantile of trip data will be used for sampling.
-When abuse testing is enabled (abuse_ratio > 0 OR lambda != 0), only dependent_time and independent_time are calculated for simulation.
+If greater than 0, only trips from the abuse_ratio to 1 quantile of trips data will be used for sampling.
 Must be between 0 and 1, otherwise an error will be thrown.}
 }
 \value{
@@ -58,8 +57,8 @@ A list containing three elements:
 \itemize{
 \item{dependent_time - Simulated time using correlated uniform sampling}
 \item{independent_time - Simulated time using independent uniform sampling}
-\item{first_order_time - Simulated time using first-order correlated sampling (NA when abuse testing is enabled)}
-\item{second_order_time - Simulated time using second-order correlated sampling (NA when abuse testing is enabled)}
+\item{first_order_time - Simulated time using first-order correlated uniform sampling}
+\item{second_order_time - Simulated time using second-order correlated uniform sampling}
 \item{simulated_length - Simulated total route length}
 }}
 \item{real_result - Summary statistics for real routes:
@@ -81,11 +80,6 @@ This function simulates route travel times and lengths based on the log normal d
 and information from time-bin \eqn{\times} edge statistics. It provides multiple simulation methods
 including dependent, independent, first-order, and second-order correlated uniform simulation.
 }
-\details{
-When abuse testing is enabled (abuse_ratio > 0 || lambda != 0), the function
-optimizes performance by only calculating the dependent_time and independent_time simulations,
-while setting other simulation results to NA.
-}
 \examples{
 # Load and prepare data
 data(trips)
@@ -96,12 +90,12 @@ result <- sample_route(c(2700, 2701, 2702, 2716, 2726, 2732, 2738, 2739, 2744, 2
 
 # Run abuse test with quantile filtering (only calculates dependent_time and independent_time)
 abuse_result <- sample_route(c(2700, 2701, 2702, 2716, 2726, 2732, 2738, 2739, 2744, 2746, 2747, 2748, 2755, 2757, 2769, 2788, 2790),
-  trips,
+  trips, r=50,
   abuse_ratio = 0.3, lambda = 0.5
 )
 }
 \seealso{
-\code{\link{OnDemand_simulator}} for similar simulation without route length,
+\code{\link{OnDemand_simulator}} for simulation with given routes,
 \code{\link{dependent_uniform}} for correlated uniform random number generation,
 \code{\link{first_order_uniform}} for first-order correlated uniform random number generation,
 \code{\link{second_order_uniform}} for second-order correlated uniform random number generation,
