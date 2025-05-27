@@ -7,22 +7,23 @@
 sample_route(distance, trips, r)
 }
 \arguments{
-\item{distance}{numeric|numeric vector Distance range.
+\item{distance}{numeric/numeric vector. The distance range.
 If a single distance is provided, it will set the lower and upper bounds to 90\% and 110\% of the distance, respectively.
 If a vector of two distances is provided, it will use the first distance as the lower bound and the second distance as the upper bound.}
 
-\item{trips}{data.table Trips data.}
+\item{trips}{data.table. Trips data, with columns trip, time, length.}
 
-\item{r}{numeric Number of samples.}
+\item{r}{numeric. Number of trips that wish to sample.}
 }
 \value{
-data.table Filtered trips.
+a data.table that contains sampled trips within given distance range.
 }
 \description{
 This function samples trips based on the distance range.
 If a single distance is provided, it will set the lower and upper bounds to 90\% and 110\% of the distance,
 respectively. If a vector of two distances is provided, it will use the first distance as the lower bound
-and the second distance as the upper bound. The function returns a data.table containing the filtered trips.
+and the second distance as the upper bound. The function returns a data.table containing the sampled
+trips within the distance range.
 }
 \examples{
 sample_route(1000, trips, 10)
