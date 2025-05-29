@@ -24,9 +24,9 @@ with an exponentially decaying correlation structure.
 The correlation matrix \eqn{S_t} is:
 \deqn{S_1=\begin{bmatrix}
 1 & \rho &\rho^2 & \rho^3&...  \\
-\rho & 1 & 2*\rho & 2*\rho^2&...\\
-\rho^2 & 2*\rho & 1 & 2*\rho&...\\
-\rho^3 & 2*\rho^2 & 2*\rho & 1&...\\
+\rho & 1 & \rho & \rho^2&...\\
+\rho^2 & \rho & 1 & \rho&...\\
+\rho^3 & \rho^2 & \rho & 1&...\\
 ... & ... & ... & ...&...\\
 \end{bmatrix}, St=[ 2 \times \sin(s \times \pi/6)]_{\forall s\in S_1}.}
 When the n and \eqn{\rho} is small, the sine transformation will make the matrix positive definite.

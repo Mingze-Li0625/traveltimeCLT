@@ -23,9 +23,9 @@ with only first order correlation.
 The matrix is transformed from:
 \deqn{S_2=\begin{bmatrix}
    1 & \rho &0 & 0&...  \\
-   \rho & 1 & 2*\rho & 0&...\\
-   0 & 2*\rho & 1 & 2*\rho&...\\
-   0 & 0 & 2*\rho & 1&...\\
+   \rho & 1 & \rho & 0&...\\
+   0 & \rho & 1 & \rho&...\\
+   0 & 0 & \rho & 1&...\\
    ... & ... & ... & ...&...\\
    \end{bmatrix},
 }

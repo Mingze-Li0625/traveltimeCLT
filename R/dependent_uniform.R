@@ -17,9 +17,9 @@ NULL
 #' The correlation matrix \eqn{S_t} is:
 #' \deqn{S_1=\begin{bmatrix}
 #' 1 & \rho &\rho^2 & \rho^3&...  \\
-#' \rho & 1 & 2*\rho & 2*\rho^2&...\\
-#' \rho^2 & 2*\rho & 1 & 2*\rho&...\\
-#' \rho^3 & 2*\rho^2 & 2*\rho & 1&...\\
+#' \rho & 1 & \rho & \rho^2&...\\
+#' \rho^2 & \rho & 1 & \rho&...\\
+#' \rho^3 & \rho^2 & \rho & 1&...\\
 #' ... & ... & ... & ...&...\\
 #' \end{bmatrix}, St=[ 2 \times \sin(s \times \pi/6)]_{\forall s\in S_1}.}
 #' When the n and \eqn{\rho} is small, the sine transformation will make the matrix positive definite.
@@ -40,12 +40,12 @@ dependent_uniform<-function(n, rho=0.31) {
       S[i, j] <- rho^(abs(i-j))
     }
   }
-  S = S +t(S)
   diag(S)<-1 
   St = 2 * sin(S * pi/6) # must be positive definite
   U = c(pnorm(rmvnorm(1, sigma = St)))
   U
 }
+
 #' Dependent uniform generator with correlation on only first order
 #'
 #' Generates a sequence of dependent uniformly distributed variables between 0 and 1 
@@ -61,9 +61,9 @@ dependent_uniform<-function(n, rho=0.31) {
 #'  The matrix is transformed from:
 #' \deqn{S_2=\begin{bmatrix}
 #'    1 & \rho &0 & 0&...  \\
-#'    \rho & 1 & 2*\rho & 0&...\\
-#'    0 & 2*\rho & 1 & 2*\rho&...\\
-#'    0 & 0 & 2*\rho & 1&...\\
+#'    \rho & 1 & \rho & 0&...\\
+#'    0 & \rho & 1 & \rho&...\\
+#'    0 & 0 & \rho & 1&...\\
 #'    ... & ... & ... & ...&...\\
 #'    \end{bmatrix},
 #' }
@@ -81,23 +81,22 @@ dependent_uniform<-function(n, rho=0.31) {
 #'   \url{https://doi.org/10.1093/imanum/22.3.329}
 #' @export
 #'
-first_order_uniform<-function(n, rho=0.31) {
-  S <-diag(n)
-  if(n>1){
-    if(n>2)for (i in 2:(n-1)) {
-      for (j in (i-1):(i+1)) {
-        S[i, j] <- 2*rho^(abs(1))
-      }
+first_order_uniform<-function(n, rho = 0.31) {
+  S <- diag(n)
+  if (n > 1) {
+    for (i in 1:n) {
+      if (i - 1 > 0) S[i, (i - 1)] <- rho
+      if (i + 1 <= n) S[i, (i + 1)] <- rho
     }
-    S[n,n-1]=2*rho
-    S[1, 2]=rho
-    S[2, 1]=rho
-    diag(S)<-1
+    diag(S) <- 1
     eigen_values <- eigen(S, symmetric = TRUE)$values
-    if(!all(eigen_values >= 0))
+    if (!all(eigen_values >= 0)) {
       S <- as.matrix(Matrix::nearPD(S, cor = TRUE)$mat)
-    U = c(pnorm(rmvnorm(1, sigma = S)))
-  }else U = runif(1)
+    }
+    U <- c(pnorm(rmvnorm(1, sigma = S)))
+  } else {
+    U <- runif(1)
+  }
   U
 }
 #' Dependent uniform generator with correlation on only second order
@@ -115,9 +114,9 @@ first_order_uniform<-function(n, rho=0.31) {
 #'  The matrix is transformed from:
 #' \deqn{S_3=\begin{bmatrix}
 #' 1 & 0 &\rho & 0&...  \\
-#' 0 & 1 & 0 & 2*\rho&...\\
+#' 0 & 1 & 0 & \rho&...\\
 #' \rho & 0 & 1 & 0&...\\
-#' 0 & 2*\rho & 0 & 1&...\\
+#' 0 & \rho & 0 & 1&...\\
 #'... & ... & ... & ...&...\\\end{bmatrix}
 #' }
 #' @examples
@@ -134,20 +133,23 @@ first_order_uniform<-function(n, rho=0.31) {
 #'   \url{https://doi.org/10.1093/imanum/22.3.329}
 #' @export
 #'
-second_order_uniform<-function(n, rho=0.31) {
-  S <-diag(n)
-  if(n>2){
+second_order_uniform<-function(n, rho = 0.31) {
+  S <- diag(n)
+  if (n > 2) {
     for (i in 1:n) {
-      if(i-2>0)S[i, (i-2)] <- 2*rho
-      if(i+2<=n)S[i, (i+2)] <- 2*rho
+      if (i - 2 > 0) S[i, (i - 2)] <- rho
+      if (i + 2 <= n) S[i, (i + 2)] <- rho
     }
-    S[1, 3]=rho
-    S[3, 1]=rho
-    diag(S)<-1
+    S[1, 3] <- rho
+    S[3, 1] <- rho
+    diag(S) <- 1
     eigen_values <- eigen(S, symmetric = TRUE)$values
-    if(!all(eigen_values >= 0))
+    if (!all(eigen_values >= 0)) {
       S <- as.matrix(Matrix::nearPD(S, cor = TRUE)$mat)
-    U = c(pnorm(rmvnorm(1, sigma = S)))
-  }else U = runif(n)
+    }
+    U <- c(pnorm(rmvnorm(1, sigma = S)))
+  } else {
+    U <- runif(n)
+  }
   U
 }
