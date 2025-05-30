@@ -9,7 +9,7 @@ sample_route(distance, trips, r)
 \arguments{
 \item{distance}{numeric/numeric vector. The distance range.
 If a single distance is provided, it will set the lower and upper bounds to 90\% and 110\% of the distance, respectively.
-If a vector of two distances is provided, it will use the first distance as the lower bound and the second distance as the upper bound.}
+If a vector of distances is provided, it will use the smallest distance as the lower bound and the largest distance as the upper bound.}
 
 \item{trips}{data.table. Trips data, with columns trip, time, length.}
 
