@@ -32,6 +32,12 @@
 #' \code{\link{get_timeBin_x_edges}} for edge statistics calculation
 #' @export
 similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, significance = 0) {
+  names(trips) <- tolower(names(trips))
+  setnames(trips,
+    old = c("linkid"),
+    new = c("linkId"),
+    skip_absent = TRUE
+  )
   if(is.null(trips$time))stop("trips do not have time!")
   if(is.null(trips$timebin))trips$timebin <- time_bins_readable(trips$time)
   if(significance > 1 | significance < 0)stop("significance must be between 0 and 1")
