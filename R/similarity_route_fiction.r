@@ -39,7 +39,7 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
     skip_absent = TRUE
   )
   if(is.null(trips$time))stop("trips do not have time!")
-  if(is.null(trips$timebin))trips$timebin <- time_bins_readable(trips$time)
+  trips$timebin <- time_bins_readable(trips$time)
   if(significance > 1 | significance < 0)stop("significance must be between 0 and 1")
   if(significance < 0.5) significance <- 1-significance
   timeBin_x_edges=get_timeBin_x_edges(trips)
@@ -49,25 +49,25 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
   real_edge_count <- trips[trip %in% tripID,.(length(time)), trip]$V1
   simulated_edge_count <- real_edge_count+floor(rnorm(length(real_edge_count), mean = 0, sd = sigma_n))
   simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
-    current_length <- .N
     target_length <- simulated_edge_count[match(trip[1], tripID)]
-
-    # 内联抽样逻辑
     sampled_edges <- .SD[, {
       edge <- timeBin_x_edges[linkId == .BY$linkId & timeBin == .BY$timebin, ]
       fr <- edge$frequency[1]
       va <- edge$sd[1]^2
       me <- edge$mean[1]
       
-      if(fr > 1) {
-        multi_timeBin_x_edges[, c("df", "stat") := {
-          numerator = (va/fr + (sd^2)/frequency)^2
-          denominator = ((va/fr)^2/(fr-1)) + ((sd^2/frequency)^2/(frequency-1))
-          stat_val = abs(me - mean)/sqrt(va/fr + (sd^2)/frequency)
-          .(numerator/denominator, stat_val)
+      if(!is.na(fr))if(fr > 1) {
+        multi_timeBin_x_edges[, similar := {
+          va_fr <- va/fr
+          sd2_freq <- (sd^2)/frequency
+          numerator <- (va_fr + sd2_freq)^2
+          denominator <- (va_fr^2)/(fr-1) + (sd2_freq^2)/(frequency-1)
+          df_val <- numerator/denominator
+          stat_val <- abs(me - mean)/sqrt(va_fr + sd2_freq)
+          abs(stat_val) < qt(significance, df = df_val)
         }, by = .(timeBin, linkId)]
         
-        similarID <- multi_timeBin_x_edges[abs(stat) < qt(significance, df = df), .(linkId,timeBin)]
+        similarID <- multi_timeBin_x_edges[similar == TRUE, .(linkId,timeBin)]
         selected_edge <- similarID[sample(.N, 1)]
       } else {
         similarID <- timeBin_x_edges[abs(mean - me) < 0.1*abs(mean) & 
@@ -76,7 +76,7 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
       }
       timeBin_x_edges[linkId == selected_edge$linkId & timeBin == selected_edge$timeBin, ]
     }, by = .(linkId, timebin)]
-    
+    current_length <- nrow(sampled_edges)
     if(current_length > target_length) {
       sampled_edges[1:target_length]
     } else if(current_length < target_length) {
@@ -85,7 +85,7 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
       sampled_edges
     }
   }, by = trip]
-  
+  simulated_data[,c(2,3)] <- NULL
   return(simulated_data)
 }
 
