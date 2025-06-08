@@ -57,14 +57,15 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
       me <- edge$mean[1]
       
       if(!is.na(fr))if(fr > 1) {
-        # 向量化相似性计算
-        va_fr <- va/multi_timeBin_x_edges$frequency
-        sd2_freq <- (multi_timeBin_x_edges$sd^2)/multi_timeBin_x_edges$frequency
-        numerator <- (va_fr + sd2_freq)^2
-        denominator <- (va_fr^2)/(fr-1) + (sd2_freq^2)/(multi_timeBin_x_edges$frequency-1)
-        df_val <- numerator/denominator
-        stat_val <- abs(me - multi_timeBin_x_edges$mean)/sqrt(va_fr + sd2_freq)
-        multi_timeBin_x_edges[, similar := abs(stat_val) < qt(significance, df = df_val)]
+        multi_timeBin_x_edges[, similar := {
+          va_fr <- va/fr
+          sd2_freq <- (sd^2)/frequency
+          numerator <- (va_fr + sd2_freq)^2
+          denominator <- (va_fr^2)/(fr-1) + (sd2_freq^2)/(frequency-1)
+          df_val <- numerator/denominator
+          stat_val <- abs(me - mean)/sqrt(va_fr + sd2_freq)
+          abs(stat_val) < qt(significance, df = df_val)
+        }, by = .(timeBin, linkId)]
         
         similarID <- multi_timeBin_x_edges[similar == TRUE, .(linkId,timeBin)]
         selected_edge <- similarID[sample(.N, 1)]
