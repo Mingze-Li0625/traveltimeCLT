@@ -36,7 +36,7 @@ dependent_uniform<-function(n, rho=0.31) {
   if(n==1)return(runif(1))
   S <-diag(n)
   for (i in 1:n) {
-    for (j in 2:n) {
+    for (j in 1:n) {
       S[i, j] <- rho^(abs(i-j))
     }
   }
@@ -113,10 +113,10 @@ first_order_uniform<-function(n, rho = 0.31) {
 #' @section Correlation Structure: We use the nearPD function in the Matrix package to find the nearest correlation matrix.
 #'  The matrix is transformed from:
 #' \deqn{S_3=\begin{bmatrix}
-#' 1 & 0 &\rho & 0&...  \\
-#' 0 & 1 & 0 & \rho&...\\
-#' \rho & 0 & 1 & 0&...\\
-#' 0 & \rho & 0 & 1&...\\
+#' 1 & \rho &\rho^2 & 0&...  \\
+#' \rho & 1 & \rho & \rho^2&...\\
+#' \rho^2 & \rho & 1 & \rho&...\\
+#' 0 & \rho^2 & \rho & 1&...\\
 #'... & ... & ... & ...&...\\\end{bmatrix}
 #' }
 #' @examples
@@ -137,8 +137,10 @@ second_order_uniform<-function(n, rho = 0.31) {
   S <- diag(n)
   if (n > 2) {
     for (i in 1:n) {
-      if (i - 2 > 0) S[i, (i - 2)] <- rho
-      if (i + 2 <= n) S[i, (i + 2)] <- rho
+      if (i - 2 > 0) S[i, (i - 2)] <- rho^2
+      if (i + 2 <= n) S[i, (i + 2)] <- rho^2
+      if (i - 1 > 0) S[i, (i - 1)] <- rho
+      if (i + 1 <= n) S[i, (i + 1)] <- rho
     }
     S[1, 3] <- rho
     S[3, 1] <- rho

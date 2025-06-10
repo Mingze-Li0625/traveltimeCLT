@@ -22,10 +22,10 @@ with only second order correlation.
  We use the nearPD function in the Matrix package to find the nearest correlation matrix.
 The matrix is transformed from:
 \deqn{S_3=\begin{bmatrix}
-1 & 0 &\rho & 0&...  \\
-0 & 1 & 0 & \rho&...\\
-\rho & 0 & 1 & 0&...\\
-0 & \rho & 0 & 1&...\\
+1 & \rho &\rho^2 & 0&...  \\
+\rho & 1 & \rho & \rho^2&...\\
+\rho^2 & \rho & 1 & \rho&...\\
+0 & \rho^2 & \rho & 1&...\\
 ... & ... & ... & ...&...\\\end{bmatrix}
 }
 }

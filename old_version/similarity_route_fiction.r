@@ -30,6 +30,7 @@
 #' sim_data <- similarity_route_fiction(c(2700), trips, significance=0.05)
 #' @seealso 
 #' \code{\link{get_timeBin_x_edges}} for edge statistics calculation
+#' @import data.table
 #' @export
 similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, significance = 0) {
   names(trips) <- tolower(names(trips))
@@ -38,6 +39,9 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
     new = c("linkId"),
     skip_absent = TRUE
   )
+  if (!data.table::is.data.table(trips)) {
+    data.table::setDT(trips)
+  }
   if(is.null(trips$time))stop("trips do not have time!")
   trips$timebin <- time_bins_readable(trips$time)
   if(significance > 1 | significance < 0)stop("significance must be between 0 and 1")
@@ -51,30 +55,39 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
   simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
     target_length <- simulated_edge_count[match(trip[1], tripID)]
     sampled_edges <- .SD[, {
-      edge <- timeBin_x_edges[linkId == .BY$linkId & timeBin == .BY$timebin, ]
-      fr <- edge$frequency[1]
+      edge <- timeBin_x_edges[linkId %in% .BY$linkId & timeBin %in% .BY$timebin, ]
+      
+      fr <- if(nrow(edge)>0) edge$frequency[1] else NA
       va <- edge$sd[1]^2
       me <- edge$mean[1]
       
       if(!is.na(fr))if(fr > 1) {
-        multi_timeBin_x_edges[, similar := {
-          va_fr <- va/fr
-          sd2_freq <- (sd^2)/frequency
-          numerator <- (va_fr + sd2_freq)^2
-          denominator <- (va_fr^2)/(fr-1) + (sd2_freq^2)/(frequency-1)
-          df_val <- numerator/denominator
-          stat_val <- abs(me - mean)/sqrt(va_fr + sd2_freq)
-          abs(stat_val) < qt(significance, df = df_val)
-        }, by = .(timeBin, linkId)]
+        # 向量化计算相似性
+        similar_matrix <- abs(multi_timeBin_x_edges$mean - me) / sqrt((va/fr) + (multi_timeBin_x_edges$sd^2)/multi_timeBin_x_edges$frequency)
+        df_vals <- ((va/fr + multi_timeBin_x_edges$sd^2/multi_timeBin_x_edges$frequency)^2) / 
+          ((va/fr)^2/(fr-1) + (multi_timeBin_x_edges$sd^2/multi_timeBin_x_edges$frequency)^2/(multi_timeBin_x_edges$frequency-1))
+        thresholds <- qt(significance, df = df_vals)
+        similar_mask <- similar_matrix < thresholds
         
-        similarID <- multi_timeBin_x_edges[similar == TRUE, .(linkId,timeBin)]
-        selected_edge <- similarID[sample(.N, 1)]
+        # 向量化取样
+        valid_edges <- which(similar_mask)
+        if(length(valid_edges) > 0) {
+          selected_idx <- sample(valid_edges, 1)
+          selected_edge <- multi_timeBin_x_edges[selected_idx, .(linkId, timeBin)]
+        } else {
+          similarID <- timeBin_x_edges[abs(mean - me) < 0.1*abs(mean) & 
+                                          timeBin == .BY$timebin & frequency==1, ]
+          selected_edge <- similarID[sample(.N, 1)]
+        }
       } else {
         similarID <- timeBin_x_edges[abs(mean - me) < 0.1*abs(mean) & 
                                     timeBin == .BY$timebin & frequency==1, ]
         selected_edge <- similarID[sample(.N, 1)]
       }
-      timeBin_x_edges[linkId == selected_edge$linkId & timeBin == selected_edge$timeBin, ]
+      if(nrow(selected_edge)!=0) {
+        timeBin_x_edges[linkId == selected_edge$linkId & timeBin == selected_edge$timeBin, ]
+      }
+      
     }, by = .(linkId, timebin)]
     current_length <- nrow(sampled_edges)
     if(current_length > target_length) {
