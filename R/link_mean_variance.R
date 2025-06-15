@@ -19,6 +19,12 @@
 #' @import data.table
 #' @export
 link_mean_variance <- function(data, L = 5L, bins = unique(data$timeBin)){
+    names(trips) <- tolower(names(trips))
+    setnames(trips,
+    old = c("linkid"),
+    new = c("linkId"),
+    skip_absent = TRUE
+  )
     train = from_to_format(data)
     
     ## linkID.from X linkID.to X tbins
