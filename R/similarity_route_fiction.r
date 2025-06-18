@@ -52,54 +52,48 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
   timeBin_x_edges=get_timeBin_x_edges(trips)
   #remove the Global time bin
   timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
-  multi_timeBin_x_edges=timeBin_x_edges[frequency>1]
-  single_timeBin_x_edges=timeBin_x_edges[frequency==1]
+  multi_timeBin_x_edges=timeBin_x_edges[frequency>1 & sd != 0]
   real_edge_count <- trips[trip %in% tripID,.(length(time)), trip]$V1
   simulated_edge_count <- real_edge_count+floor(rnorm(length(real_edge_count), mean = 0, sd = sigma_n))
   simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
+    
     target_length <- simulated_edge_count[match(trip[1], tripID)]
+    edge_stats <- as.matrix(multi_timeBin_x_edges[, .(mean, sd, frequency,ID)])
+    # 根据linkId和timebin查找对应ID
+    current_ids <- timeBin_x_edges[linkId %in% .SD$linkId & timeBin %in% .SD$timebin, ID]
+    current_features <- edge_stats[edge_stats[,"ID"] %in% current_ids, ]
     
-    # 构建所有边的统计矩阵
-    # 修正后的方差计算（保留原始标准差）
-    edge_stats <- as.matrix(timeBin_x_edges[, .(mean, sd, frequency)])
-    rownames(edge_stats) <- timeBin_x_edges$linkId
-    
-    # 获取当前trip的边特征矩阵
-    current_edges <- unique(.SD[, .(linkId, timebin)])
-    current_features <- edge_stats[current_edges$linkId, ]
-    
-    current_var <- (current_features[, "sd"]^2)/current_features[, "frequency"]
-    edge_var <- (edge_stats[, "sd"]^2)/edge_stats[, "frequency"]
-    
-    # 重构相似性计算为矩阵运算
-    # 重构均值差异计算为外积形式
     mean_diff <- outer(current_features[, "mean"], edge_stats[, "mean"], "-")
+    current_var <- current_features[, "sd"]^2/current_features[, "frequency"]
+    edge_var <- edge_stats[, "sd"]^2/edge_stats[, "frequency"]
     
-    # 重构方差计算
-    current_var <- current_features[, "sd"]/current_features[, "frequency"]
-    edge_var <- edge_stats[, "sd"]/edge_stats[, "frequency"]
     combined_se <- sqrt(outer(current_var, edge_var, "+"))
     
-    # 重构t检验条件
     t_ratio <- abs(mean_diff) / combined_se
     df_matrix <- (outer(current_var, edge_var, "+"))^2 / 
                 (outer(current_var^2/(current_features[, "frequency"]-1), 
                       edge_var^2/(edge_stats[, "frequency"]-1), "+"))
     
-    similarity_conditions <- t_ratio < qt(significance, df=df_matrix)
+    # 预计算唯一自由度值的分位数
+    unique_df_values <- unique(as.vector(df_matrix))
+    quantile_values <- qt((1 + significance)/2, df = unique_df_values)
+    
+    # 创建分位数矩阵
+    qt_matrix <- matrix(quantile_values[match(df_matrix, unique_df_values)], 
+                       nrow = nrow(df_matrix), ncol = ncol(df_matrix))
+    
+    similarity_conditions <- t_ratio < qt_matrix
     
     # 重构有效边筛选逻辑
     valid_cols <- which(colSums(similarity_conditions) > 0)
     
     # 矩阵采样
-    valid_linkIds <- timeBin_x_edges[valid_cols, linkId]
+    valid_ID <- multi_timeBin_x_edges[valid_cols, ID]
     
-    sampled_indices <- if(length(valid_linkIds) > 0) {
-      sample(valid_linkIds, target_length, replace=TRUE)
-    } else {
-      sample(timeBin_x_edges$linkId, target_length, replace=TRUE)
+    sampled_indices <- if(length(valid_ID) > 0) {
+      sample(valid_ID, target_length, replace=TRUE)
     }
-    sampled_edges <- timeBin_x_edges[linkId %in% sampled_indices, .(
+    sampled_edges <- multi_timeBin_x_edges[ID %in% sampled_indices, .(
       linkId, 
       timeBin,
       mean, 
@@ -119,5 +113,3 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
 
   return(simulated_data)
 }
-
-

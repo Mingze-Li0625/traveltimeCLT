@@ -39,7 +39,10 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
     new = c("linkId"),
     skip_absent = TRUE
   )
+      # 设置多线程
+  setDTthreads(0)  # 自动使用所有CPU核心
   if (!data.table::is.data.table(trips)) {
+
     data.table::setDT(trips)
   }
   if(is.null(trips$time))stop("trips do not have time!")
@@ -49,46 +52,55 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
   timeBin_x_edges=get_timeBin_x_edges(trips)
   #remove the Global time bin
   timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
-  multi_timeBin_x_edges=timeBin_x_edges[frequency>1]
+  multi_timeBin_x_edges=timeBin_x_edges[frequency>1 & sd != 0]
   real_edge_count <- trips[trip %in% tripID,.(length(time)), trip]$V1
   simulated_edge_count <- real_edge_count+floor(rnorm(length(real_edge_count), mean = 0, sd = sigma_n))
   simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
+    
     target_length <- simulated_edge_count[match(trip[1], tripID)]
-    sampled_edges <- .SD[, {
-      edge <- timeBin_x_edges[linkId %in% .BY$linkId & timeBin %in% .BY$timebin, ]
-      
-      fr <- if(nrow(edge)>0) edge$frequency[1] else NA
-      va <- edge$sd[1]^2
-      me <- edge$mean[1]
-      
-      if(!is.na(fr))if(fr > 1) {
-        # 向量化计算相似性
-        similar_matrix <- abs(multi_timeBin_x_edges$mean - me) / sqrt((va/fr) + (multi_timeBin_x_edges$sd^2)/multi_timeBin_x_edges$frequency)
-        df_vals <- ((va/fr + multi_timeBin_x_edges$sd^2/multi_timeBin_x_edges$frequency)^2) / 
-          ((va/fr)^2/(fr-1) + (multi_timeBin_x_edges$sd^2/multi_timeBin_x_edges$frequency)^2/(multi_timeBin_x_edges$frequency-1))
-        thresholds <- qt(1 - (1 - significance)/2, df = df_vals)
-        similar_mask <- similar_matrix < thresholds
-        
-        # 向量化取样
-        valid_edges <- which(similar_mask)
-        if(length(valid_edges) > 0) {
-          selected_idx <- sample(valid_edges, 1)
-          selected_edge <- multi_timeBin_x_edges[selected_idx, .(linkId, timeBin)]
-        } else {
-          similarID <- timeBin_x_edges[abs(mean - me) < 0.1*abs(mean) & 
-                                          timeBin == .BY$timebin & frequency==1, ]
-          selected_edge <- similarID[sample(.N, 1)]
-        }
-      } else {
-        similarID <- timeBin_x_edges[abs(mean - me) < 0.1*abs(mean) & 
-                                    timeBin == .BY$timebin & frequency==1, ]
-        selected_edge <- similarID[sample(.N, 1)]
-      }
-      if(nrow(selected_edge)!=0) {
-        timeBin_x_edges[linkId == selected_edge$linkId & timeBin == selected_edge$timeBin, ]
-      }
-      
-    }, by = .(linkId, timebin)]
+    edge_stats <- as.matrix(multi_timeBin_x_edges[, .(mean, sd, frequency,ID)])
+    # 根据linkId和timebin查找对应ID
+    current_ids <- timeBin_x_edges[linkId %in% .SD$linkId & timeBin %in% .SD$timebin, ID]
+    current_features <- edge_stats[edge_stats[,"ID"] %in% current_ids, ]
+    
+    mean_diff <- outer(current_features[, "mean"], edge_stats[, "mean"], "-")
+    current_var <- current_features[, "sd"]^2/current_features[, "frequency"]
+    edge_var <- edge_stats[, "sd"]^2/edge_stats[, "frequency"]
+    
+    combined_se <- sqrt(outer(current_var, edge_var, "+"))
+    
+    t_ratio <- abs(mean_diff) / combined_se
+    df_matrix <- (outer(current_var, edge_var, "+"))^2 / 
+                (outer(current_var^2/(current_features[, "frequency"]-1), 
+                      edge_var^2/(edge_stats[, "frequency"]-1), "+"))
+    
+    # 预计算唯一自由度值的分位数
+    unique_df_values <- unique(as.vector(df_matrix))
+    quantile_values <- qt((1 + significance)/2, df = unique_df_values)
+    
+    # 创建分位数矩阵
+    qt_matrix <- matrix(quantile_values[match(df_matrix, unique_df_values)], 
+                       nrow = nrow(df_matrix), ncol = ncol(df_matrix))
+    
+    similarity_conditions <- t_ratio < qt_matrix
+    
+    # 重构有效边筛选逻辑
+    valid_cols <- which(colSums(similarity_conditions) > 0)
+    
+    # 矩阵采样
+    valid_ID <- multi_timeBin_x_edges[valid_cols, ID]
+    
+    sampled_indices <- if(length(valid_ID) > 0) {
+      sample(valid_ID, target_length, replace=TRUE)
+    }
+    sampled_edges <- multi_timeBin_x_edges[ID %in% sampled_indices, .(
+      linkId, 
+      timeBin,
+      mean, 
+      sd=sqrt(sd),
+      frequency,
+      length
+    )]
     current_length <- nrow(sampled_edges)
     if(current_length > target_length) {
       sampled_edges[1:target_length]
@@ -98,7 +110,7 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
       sampled_edges
     }
   }, by = trip]
-  simulated_data[,c(2,3)] <- NULL
+
   return(simulated_data)
 }
-# around 210 seconds for trip 11~20
+# around 280 seconds for trip 11~20

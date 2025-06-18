@@ -119,5 +119,3 @@ similarity_route_fiction <- function(tripID, trips, rho = 0.31, sigma_n = 0, sig
 
   return(simulated_data)
 }
-
-
