@@ -7,7 +7,8 @@
 similarity_route_fiction(
   tripID,
   trips,
-  rho = 0.31,
+  r = 1,
+  model = "normal",
   sigma_n = 0,
   significance = 0
 )
@@ -20,34 +21,41 @@ similarity_route_fiction(
 \item{trip - Unique trip identifier}
 \item{linkId - Road segment identifier}
 \item{time - POSIXct timestamp}
-\item{timeBin - Time period classification (see \code{\link{time_bins_readable}})}
 \item{length - Road segment length}
 }}
 
-\item{rho}{Correlation coefficient (0-1) for sampling similarity threshold. Default=0.31}
+\item{r}{Number of simulation rounds (default=1). Only available for normal distribution.}
+
+\item{model}{Statistical model to use - "normal" (default) or "t" distribution}
 
 \item{sigma_n}{Standard deviation of noise added to edge counts. Default=0}
 
-\item{significance}{Significance level (0-1) for Welch's t-test similarity comparison.
+\item{significance}{Significance level (0-1) for similarity comparison.
 Close to zero or one meaning include more trips. Default=0.}
 }
 \value{
 A data.table containing simulated routes with columns:
 \itemize{
 \item{trip - Simulated trip identifier}
+\item{newtrip - Simulation round identifier}
 \item{linkId - Sampled road segment ID}
-\item{timebin - Time period classification}
-\item{length - Road segment length}
+\item{timeBin - Time period classification}
+\item{frequency - Edge usage frequency}
+\item{mean - Historical mean travel time}
+\item{sd - Historical standard deviation}
 }
 }
 \description{
 This function generates simulated routes by statistically similarity of edges
-using Welch's t-test.
+using Normal or Welch's t-test.
 }
 \examples{
 data(trips)
 names(trips) <- c("trip", "linkid", "timebin", "speed", "duration", "length", "time")
-sim_data <- similarity_route_fiction(c(2700), trips, significance=0.05)
+# Basic simulation with normal distribution
+sim_data <- similarity_route_fiction(c(2700), trips, r=5)
+# t-distribution simulation with significance threshold
+sim_t <- similarity_route_fiction(c(2700), trips, model="t", significance=0.05)
 }
 \seealso{
 \code{\link{get_timeBin_x_edges}} for edge statistics calculation

@@ -31,14 +31,19 @@
 #' @seealso 
 #' \code{\link{get_timeBin_x_edges}} for edge statistics calculation
 #' @import data.table
-#' @export
-similarity_route_fiction_t <- function(tripID, trips, sigma_n = 0, significance = 0) {
-  names(trips) <- tolower(names(trips))
+#' @export 
+similarity_route_fiction <- function(tripID, trips, r=1,model = "normal", sigma_n = 0, significance = 0) {
+  
+  model <- tolower(model)
+  if(!model %in% c("normal","t")){stop("model must be normal or t")}
+    names(trips) <- tolower(names(trips))
   setnames(trips,
     old = c("linkid"),
     new = c("linkId"),
     skip_absent = TRUE
   )
+      # 设置多线程
+  setDTthreads(0)  # 自动使用所有CPU核心
   if (!data.table::is.data.table(trips)) {
     data.table::setDT(trips)
   }
@@ -46,12 +51,80 @@ similarity_route_fiction_t <- function(tripID, trips, sigma_n = 0, significance 
   trips$timebin <- time_bins_readable(trips$time)
   if(significance > 1 | significance < 0)stop("significance must be between 0 and 1")
   if(significance < 0.5) significance <- 1-significance
+  if(model == "t"){
+    similarity_route_fiction_t(tripID, trips, sigma_n = sigma_n, significance = significance)
+  }
+  else if(model == "normal"){
+    similarity_route_fiction_normal(tripID, trips,r, sigma_n = sigma_n, significance = significance)
+  }
+}
+#' @export
+similarity_route_fiction_normal <- function(tripID, trips,r, sigma_n = 0, significance = 0) {
   timeBin_x_edges=get_timeBin_x_edges(trips)
   #remove the Global time bin
   timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
-  multi_timeBin_x_edges=timeBin_x_edges[frequency>1]
+  multi_timeBin_x_edges=timeBin_x_edges[frequency>1 & sd!=0]
   real_edge_count <- trips[trip %in% tripID,.(length(time)), trip]$V1
   simulated_edge_count <- real_edge_count+floor(rnorm(length(real_edge_count), mean = 0, sd = sigma_n))
+  thresholds <- qnorm(1-(1-significance)/2, mean = 0, sd = 1)
+  newtrips <- 1
+  simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
+    target_length <- simulated_edge_count[match(trip[1], tripID)]
+
+    all_edges <- unique(.SD[, .(linkId, timebin)])
+    setnames(all_edges, old = "timebin", new = "timeBin")
+    all_edges <- merge(all_edges, timeBin_x_edges[,.(linkId, timeBin, frequency, mean, sd, ID)], by = c("linkId", "timeBin"), all.x = TRUE, all.y = FALSE)
+    all_edges <- na.omit(all_edges)
+    # 矩阵化运算
+    # 基于ID的矩阵运算
+    similarity_matrix <- multi_timeBin_x_edges[
+      all_edges,
+      on = .(ID),
+      .(
+        origin_ID = i.ID,
+        candidate_ID = x.ID,
+        similarity = abs(mean - x.mean) / sqrt((x.sd^2/x.frequency) + (sd^2/frequency))
+      ),
+      by = .EACHI
+    ]
+    View(similarity_matrix)
+    re <- NULL
+  for(i in 1:r){
+    # 筛选并采样
+    valid_edges <- similarity_matrix[similarity < thresholds]
+    sampled_IDs <- valid_edges[, .(
+      selected_ID = sample(candidate_ID, size = 1, replace = TRUE)
+    ), by = origin_ID]
+
+    # 通过ID合并原始数据
+    sampled_edges <- timeBin_x_edges[
+      sampled_IDs,
+      on = .(ID = selected_ID)
+    ][, .( newtrip = newtrips, linkId,timeBin,frequency, mean, sd)]
+    newtrips <<- newtrips + 1
+    current_length <- nrow(sampled_edges)
+    if(current_length > target_length) {
+      re <- rbind(re, sampled_edges[1:target_length])
+    } else if(current_length < target_length) {
+      re <- rbind(re,rbind(sampled_edges, sampled_edges[sample(.N, target_length - current_length, replace = TRUE)]))
+    } else {
+      re <- rbind(re, sampled_edges)
+    }
+  }
+  re
+  }, by = trip]
+  return(simulated_data)
+}
+
+#' @export
+similarity_route_fiction_t <- function(tripID, trips, sigma_n = 0, significance = 0) {
+  timeBin_x_edges=get_timeBin_x_edges(trips)
+  #remove the Global time bin
+  timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
+  multi_timeBin_x_edges=timeBin_x_edges[frequency>1 & sd != 0]
+  real_edge_count <- trips[trip %in% tripID,.(length(time)), trip]$V1
+  simulated_edge_count <- real_edge_count+floor(rnorm(length(real_edge_count), mean = 0, sd = sigma_n))
+  newtrips <- 1
   simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
     target_length <- simulated_edge_count[match(trip[1], tripID)]
     sampled_edges <- .SD[, {
@@ -89,6 +162,9 @@ similarity_route_fiction_t <- function(tripID, trips, sigma_n = 0, significance 
       }
       
     }, by = .(linkId, timebin)]
+    sampled_edges$newtrip <- rep(newtrips, nrow(sampled_edges))
+    newtrips <<- newtrips + 1
+    sampled_edges$ID <- NULL
     current_length <- nrow(sampled_edges)
     if(current_length > target_length) {
       sampled_edges[1:target_length]
@@ -101,4 +177,3 @@ similarity_route_fiction_t <- function(tripID, trips, sigma_n = 0, significance 
   simulated_data[,c(2,3)] <- NULL
   return(simulated_data)
 }
-# around 210 seconds for trip 11~20
