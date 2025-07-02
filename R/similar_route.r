@@ -12,6 +12,7 @@
 #'  \item{length - Road segment length}
 #' }
 #' @param r Number of simulation rounds (default=1). Only available for normal distribution.
+#'  T distribution will ignore this input.
 #' @param model Statistical model to use - "normal" (default) or "t" distribution
 #' @param sigma_n Standard deviation of noise added to edge counts. Default=0
 #' @param significance Significance level (0-1) for similarity comparison.
@@ -31,14 +32,14 @@
 #' data(trips)
 #' names(trips) <- c("trip", "linkid", "timebin", "speed", "duration", "length", "time")
 #' # Basic simulation with normal distribution
-#' sim_data <- similarity_route_fiction(c(2700), trips, r=5)
+#' sim_data <- similar_route(c(2700), trips, r=5)
 #' # t-distribution simulation with significance threshold
-#' sim_t <- similarity_route_fiction(c(2700), trips, model="t", significance=0.05)
+#' sim_t <- similar_route(c(2700), trips, model="t", significance=0.05)
 #' @seealso 
 #' \code{\link{get_timeBin_x_edges}} for edge statistics calculation
 #' @import data.table
 #' @export 
-similarity_route_fiction <- function(tripID, trips, r=1,model = "normal", sigma_n = 0, significance = 0) {
+similar_route <- function(tripID, trips, r=1,model = "normal", sigma_n = 0, significance = 0) {
   
   model <- tolower(model)
   if(!model %in% c("normal","t")){stop("model must be normal or t")}
@@ -58,14 +59,14 @@ similarity_route_fiction <- function(tripID, trips, r=1,model = "normal", sigma_
   if(significance > 1 | significance < 0)stop("significance must be between 0 and 1")
   if(significance < 0.5) significance <- 1-significance
   if(model == "t"){
-    similarity_route_fiction_t(tripID, trips, sigma_n = sigma_n, significance = significance)
+    similar_route.t(tripID, trips, sigma_n = sigma_n, significance = significance)
   }
   else if(model == "normal"){
-    similarity_route_fiction_normal(tripID, trips,r, sigma_n = sigma_n, significance = significance)
+    similar_route.normal(tripID, trips,r, sigma_n = sigma_n, significance = significance)
   }
 }
 #' @export
-similarity_route_fiction_normal <- function(tripID, trips,r, sigma_n = 0, significance = 0) {
+similar_route.normal <- function(tripID, trips,r, sigma_n = 0, significance = 0) {
   timeBin_x_edges=get_timeBin_x_edges(trips)
   #remove the Global time bin
   timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
@@ -112,7 +113,7 @@ similarity_route_fiction_normal <- function(tripID, trips,r, sigma_n = 0, signif
     sampled_edges <- timeBin_x_edges[
       sampled_IDs,
       on = .(ID = selected_ID)
-    ][, .( newtrip = newtrips, linkId,timeBin,frequency, mean, sd)]
+    ][, .( newtrip = newtrips, linkId,timeBin,frequency, mean, sd,length)]
     newtrips <<- newtrips + 1
     current_length <- nrow(sampled_edges)
     target_length <- real_length + floor(rnorm(1, mean = 0, sd = sigma_n))
@@ -133,7 +134,7 @@ similarity_route_fiction_normal <- function(tripID, trips,r, sigma_n = 0, signif
 }
 
 #' @export
-similarity_route_fiction_t <- function(tripID, trips, sigma_n = 0, significance = 0) {
+similar_route.t <- function(tripID, trips, sigma_n = 0, significance = 0) {
   timeBin_x_edges=get_timeBin_x_edges(trips)
   #remove the Global time bin
   timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]

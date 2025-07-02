@@ -1,4 +1,4 @@
-#' Fictional Route Simulator base on frequency
+#' Route Simulator and pressure test base on frequency
 #'
 #' This function simulates route travel times and lengths based on the log normal distributions
 #' and information from time-bin \eqn{\times} edge statistics. It provides multiple simulation methods
@@ -77,7 +77,7 @@
 #' \code{\link{time_bins_readable}} for time bin classification,
 #' \code{\link{get_timeBin_x_edges}} for edge statistics calculation
 #' @export
-frequency_route_fiction <- function(tripID, trips, r = NULL, timeBin_x_edges = NULL, rho = 0.31, lambda = 0, severity = 0) {
+pressure_test1 <- function(tripID, trips, r = NULL, timeBin_x_edges = NULL, rho = 0.31, lambda = 0, severity = 0) {
   # Validate severity is between 0 and 1
   if (severity < 0 || severity > 1) {
     stop("severity must be between 0 and 1")
