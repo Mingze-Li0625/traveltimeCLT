@@ -54,9 +54,9 @@ using Normal or Welch's t-test.
 data(trips)
 names(trips) <- c("trip", "linkid", "timebin", "speed", "duration", "length", "time")
 # Basic simulation with normal distribution
-sim_data <- similarity_route_fiction(c(2700), trips, r=5)
+sim_data <- similar_route(c(2700), trips, r=5)
 # t-distribution simulation with significance threshold
-sim_t <- similarity_route_fiction(c(2700), trips, model="t", significance=0.05)
+sim_t <- similar_route(c(2700), trips, model="t", significance=0.05)
 }
 \seealso{
 \code{\link{get_timeBin_x_edges}} for edge statistics calculation

@@ -57,7 +57,6 @@ similar_route <- function(tripID, trips, r=1,model = "normal", sigma_n = 0, sign
   if(is.null(trips$time))stop("trips do not have time!")
   trips$timebin <- time_bins_readable(trips$time)
   if(significance > 1 | significance < 0)stop("significance must be between 0 and 1")
-  if(significance < 0.5) significance <- 1-significance
   if(model == "t"){
     similar_route.t(tripID, trips, sigma_n = sigma_n, significance = significance)
   }
