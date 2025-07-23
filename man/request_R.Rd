@@ -19,7 +19,7 @@ request_R(
 )
 }
 \arguments{
-\item{predict_data}{data.frame Prediction data from travelCLT containing:
+\item{predict_data}{data.frame Prediction data from traveltimeCLT containing:
 - ETA: predicted time in seconds
 - variance: predicted time variance}
 

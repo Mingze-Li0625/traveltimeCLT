@@ -14,10 +14,10 @@ price(
 )
 }
 \arguments{
-\item{duration}{numeric|list Trip duration in seconds. If list, expects output
+\item{duration}{numeric|list Trip duration in seconds (converted to minutes internally). If list, expects output
 from \code{\link{route_time}} list containing \code{expect_time} elements}
 
-\item{trip_length}{numeric|list Trip distance in meters. If list, expects output
+\item{trip_length}{numeric|list Trip distance in meters (converted to kilometers internally). If list, expects output
 from \code{\link{route_length}} containing \code{total_length} elements}
 
 \item{C0}{numeric Base fare (CAD)}

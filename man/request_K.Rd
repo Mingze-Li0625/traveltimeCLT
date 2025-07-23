@@ -6,31 +6,29 @@
 \usage{
 request_K(
   predict_data,
-  t2,
-  t1,
   trip_length,
   C0 = 3.17,
   C1 = 0.31,
   C2 = 0.9,
-  risk_free = 0.0302
+  discount_factor = 1
 )
 }
 \arguments{
 \item{predict_data}{data.frame Prediction data containing ETA (seconds)}
 
-\item{t2}{POSIXct|character Service request time(s)}
-
-\item{t1}{POSIXct|character Scheduled pickup time(s)}
-
 \item{trip_length}{numeric Trip distance in meters}
 
 \item{C0}{numeric Base fare (CAD)}
 
-\item{C1}{numeric Time rate (CAD/minute)}
+\item{C1}{numeric Time rate (CAD/minute - converted to CAD/second internally)}
 
-\item{C2}{numeric Distance rate (CAD/kilometer)}
+\item{C2}{numeric Distance rate (CAD/kilometer - converted to CAD/meter internally)}
 
-\item{risk_free}{numeric Annual risk-free rate (e.g., 0.03 for 3\%)}
+\item{discount_factor}{numeric Discount multiplier (default = 1)}
+
+\item{t1}{POSIXct|character Scheduled pickup time(s)}
+
+\item{t2}{POSIXct|character Service request time(s)}
 }
 \value{
 numeric Vector of discounted prices

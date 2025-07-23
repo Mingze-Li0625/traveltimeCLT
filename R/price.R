@@ -2,9 +2,9 @@
 #'
 #' Calculate ride prices based on duration and distance
 #'
-#' @param duration numeric|list Trip duration in seconds. If list, expects output
+#' @param duration numeric|list Trip duration in seconds (converted to minutes internally). If list, expects output
 #'        from \code{\link{route_time}} list containing `expect_time` elements
-#' @param trip_length numeric|list Trip distance in meters. If list, expects output
+#' @param trip_length numeric|list Trip distance in meters (converted to kilometers internally). If list, expects output
 #'        from \code{\link{route_length}} containing `total_length` elements
 #' @param C0 numeric Base fare (CAD)
 #' @param C1 numeric Time rate (CAD/minute)
@@ -70,7 +70,7 @@ arrive_R <- function(t0, t2, t1, trip_length, K = 1, C0 = 3.17, C1 = 0.31, C2 = 
 #'
 #' Calculate guarantee price at service request time using travel time predictions
 #'
-#' @param predict_data data.frame Prediction data from travelCLT containing:
+#' @param predict_data data.frame Prediction data from traveltimeCLT containing:
 #'        - ETA: predicted time in seconds
 #'        - variance: predicted time variance
 #' @param t1 POSIXct|character Scheduled pickup time(s)
@@ -106,9 +106,8 @@ request_R <- function(predict_data, t2, t1, trip_length, K = 1, C0 = 3.17, C1 = 
   if (!all(delta_t_seconds >= 0)) stop("all t2 must be earlier or equal to t1")
 
   type <- tolower(as.character(type))
-  if (type == "proportion") K <- K * (C0 + C1 * predict_data$ETA + C2 * trip_length)
-
   d0 <- C0 + C1 * predict_data$ETA + C2 * trip_length
+  if (type == "proportion") K <- K * d0
   d1 <- sqrt(predict_data$variance)
   d4 <- (K * exp(zeta) - d0) / (C1 * d1)
   d5 <- d4 + r_second * d1
@@ -123,31 +122,23 @@ request_R <- function(predict_data, t2, t1, trip_length, K = 1, C0 = 3.17, C1 = 
 #' Calculate discounted trip price at service request time
 #'
 #' @param predict_data data.frame Prediction data containing ETA (seconds)
-#' @param t1 POSIXct|character Scheduled pickup time(s)
-#' @param t2 POSIXct|character Service request time(s)
 #' @param trip_length numeric Trip distance in meters
 #' @param C0 numeric Base fare (CAD)
-#' @param C1 numeric Time rate (CAD/minute)
-#' @param C2 numeric Distance rate (CAD/kilometer)
-#' @param risk_free numeric Annual risk-free rate (e.g., 0.03 for 3%)
+#' @param C1 numeric Time rate (CAD/minute - converted to CAD/second internally)
+#' @param C2 numeric Distance rate (CAD/kilometer - converted to CAD/meter internally)
+#' @param discount_factor numeric Discount multiplier (default = 1)
+#' @param t1 POSIXct|character Scheduled pickup time(s)
+#' @param t2 POSIXct|character Service request time(s)
 #' @return numeric Vector of discounted prices
 #' @author Mingze Li <mingzeli7@cmail.carleton.ca>
 #' @examples
 #' data <- data.frame(ETA = 1800)
 #' request_K(data, "2023-01-01 08:00:00", "2023-01-01 08:30:00", 40214.33)
 #' @export
-request_K <- function(predict_data, t2, t1, trip_length, C0 = 3.17, C1 = 0.31, C2 = 0.9, risk_free = 0.0302) {
-  t1 <- as.POSIXct(t1)
-  t2 <- as.POSIXct(t2)
+request_K <- function(predict_data, trip_length, C0 = 3.17, C1 = 0.31, C2 = 0.9, discount_factor = 1) {
   C2 <- C2 / 1000 # 0.9 CAD/km -> 0.0009 CAD/m
   C1 <- C1 / 60 # 0.31 CAD/min -> ~0.0051667 CAD/sec
 
-  seconds_per_year <- 365 * 24 * 3600
-  r_annual <- log(1 + risk_free)
-  r_second <- r_annual / seconds_per_year
-  delta_t_seconds <- as.numeric(difftime(t1, t2, units = "sec"))
-  if (!all(delta_t_seconds >= 0)) stop("all t2 must be earlier or equal to t1")
-  discount_factor <- exp(-r_second * delta_t_seconds)
   K <- C0 + C1 * predict_data$ETA + C2 * trip_length
   request_K <- K * discount_factor
 
