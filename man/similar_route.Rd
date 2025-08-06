@@ -2,19 +2,19 @@
 % Please edit documentation in R/similar_route.r
 \name{similar_route}
 \alias{similar_route}
-\title{Route Simulation based on Statistical Similarity}
+\title{Route Simulation Using Statistical Similarity}
 \usage{
 similar_route(
   tripID,
   trips,
   r = 1,
   model = "normal",
-  sigma_n = 0,
-  significance = 0
+  sigma_n = 2,
+  significance = 0.05
 )
 }
 \arguments{
-\item{tripID}{Vector of trip identifiers to use as templates for simulation}
+\item{tripID}{Vector of trip identifiers to use as simulation templates}
 
 \item{trips}{Data.table containing historical trip data with columns:
 \itemize{
@@ -24,37 +24,36 @@ similar_route(
 \item{length - Road segment length}
 }}
 
-\item{r}{Number of simulation rounds (default=1). Only available for normal distribution.
-T distribution will ignore this input.}
+\item{r}{Number of simulation rounds (default=1)}
 
-\item{model}{Statistical model to use - "normal" (default) or "t" distribution}
+\item{model}{Statistical model: "normal" (z-test) or "t" (Welch's t-test)}
 
-\item{sigma_n}{Standard deviation of noise added to edge counts. Default=0}
+\item{sigma_n}{Std dev of noise added to route length (default=2)}
 
-\item{significance}{Significance level (0-1) for similarity comparison.
-Close to zero or one meaning include more trips. Default=0.}
+\item{significance}{Significance level (α) for similarity threshold.
+Defaults is 0.05. A larger value will result in more posible choices with less similarity.}
 }
 \value{
-A data.table containing simulated routes with columns:
+Data.table containing:
 \itemize{
-\item{trip - Simulated trip identifier}
-\item{newtrip - Simulation round identifier}
-\item{linkId - Sampled road segment ID}
+\item{trip - Original trip ID}
+\item{newtrip - Simulation iteration ID}
+\item{linkId - Sampled road segment}
 \item{timeBin - Time period classification}
-\item{frequency - Edge usage frequency}
+\item{frequency - Historical edge usage count}
 \item{mean - Historical mean travel time}
-\item{sd - Historical standard deviation}
+\item{sd - Historical travel time std dev}
 }
 }
 \description{
-This function generates simulated routes by statistically similarity of edges
-using Normal or Welch's t-test.
+This function generates simulated routes by comparing edge statistics using
+either Normal distribution or Welch's t-test for similarity assessment.
 }
 \examples{
 data(trips)
 names(trips) <- c("trip", "linkid", "timebin", "speed", "duration", "length", "time")
 # Basic simulation with normal distribution
-sim_data <- similar_route(c(2700), trips, r=5)
+sim_normal <- similar_route(c(2700), trips, significance=0.05)
 # t-distribution simulation with significance threshold
 sim_t <- similar_route(c(2700), trips, model="t", significance=0.05)
 }
