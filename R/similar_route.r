@@ -11,7 +11,7 @@
 #'  \item{time - POSIXct timestamp}
 #'  \item{length - Road segment length}
 #' }
-#' @param r Number of simulation rounds (default=1)
+#' @param r Number of simulated route for every input (default=1)
 #' @param model Statistical model: "normal" (z-test) or "t" (Welch's t-test), default is "normal".
 #' normal distribution is faster.
 #' @param sigma_n Std dev of noise added to route length (default=2)
@@ -68,18 +68,16 @@ similar_route <- function(tripID, trips, r=1,model = "normal", sigma_n = 2, sign
 similar_route.normal <- function(tripID, trips,r, sigma_n = 0, significance = 0) {
   timeBin_x_edges=get_timeBin_x_edges(trips)
   #remove the Global time bin
-  timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
-  multi_timeBin_x_edges=timeBin_x_edges[frequency>1 & sd!=0]
-  real_edge_count <- trips[trip %in% tripID,.(length(time)), trip]$V1
+  multi_timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
+  multi_timeBin_x_edges=multi_timeBin_x_edges[frequency>1 & sd!=0]
   thresholds <- qnorm(1-(1-significance)/2, mean = 0, sd = 1)
   newtrips <- 1
   simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
-    real_length <- real_edge_count[match(trip[1], tripID)]
-
     all_edges <- unique(.SD[, .(linkId, timebin)])
     setnames(all_edges, old = "timebin", new = "timeBin")
     all_edges <- merge(all_edges, timeBin_x_edges[,.(linkId, timeBin, frequency, mean, sd, ID)], by = c("linkId", "timeBin"), all.x = TRUE, all.y = FALSE)
     all_edges <- na.omit(all_edges)
+    real_length <- nrow(all_edges)
     multi_timeBin_x_edges[, `:=`(sd2_freq = sd^2 / frequency)]
     all_edges[, `:=`(sd2_freq = sd^2 / frequency)]
     # virtual join to create a dummy key for cartesian product
@@ -140,18 +138,16 @@ similar_route.normal <- function(tripID, trips,r, sigma_n = 0, significance = 0)
 #' @export
 similar_route.t <- function(tripID, trips, sigma_n = 0, significance = 0, r = 1) {
   timeBin_x_edges=get_timeBin_x_edges(trips)
-  timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
-  multi_timeBin_x_edges=timeBin_x_edges[frequency>1 & sd != 0]
-  real_edge_count <- trips[trip %in% tripID,.(length(time)), trip]$V1
+  multi_timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
+  multi_timeBin_x_edges=multi_timeBin_x_edges[frequency>1 & sd != 0]
   newtrips <- 1
   simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
-    real_length <- real_edge_count[match(trip[1], tripID)]
     all_edges <- unique(.SD[, .(linkId, timebin)])
     setnames(all_edges, old = "timebin", new = "timeBin")
     all_edges <- merge(all_edges, timeBin_x_edges[,.(linkId, timeBin, frequency, mean, sd, ID)], 
                       by = c("linkId", "timeBin"), all.x = TRUE, all.y = FALSE)
     all_edges <- na.omit(all_edges)
-    
+    real_length <- nrow(all_edges)
     multi_timeBin_x_edges[, dummy := 1]
     all_edges[, dummy := 1]
     

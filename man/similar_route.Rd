@@ -24,9 +24,10 @@ similar_route(
 \item{length - Road segment length}
 }}
 
-\item{r}{Number of simulation rounds (default=1)}
+\item{r}{Number of simulated route for every input (default=1)}
 
-\item{model}{Statistical model: "normal" (z-test) or "t" (Welch's t-test)}
+\item{model}{Statistical model: "normal" (z-test) or "t" (Welch's t-test), default is "normal".
+normal distribution is faster.}
 
 \item{sigma_n}{Std dev of noise added to route length (default=2)}
 
@@ -47,7 +48,7 @@ Data.table containing:
 }
 \description{
 This function generates simulated routes by comparing edge statistics using
-either Normal distribution or Welch's t-test for similarity assessment.
+either Normal distribution(for a faster calculation) or Welch's t-test for similarity assessment.
 }
 \examples{
 data(trips)
