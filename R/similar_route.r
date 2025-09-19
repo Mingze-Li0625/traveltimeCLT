@@ -91,7 +91,9 @@ similar_route.normal <- function(tripID, trips,r, sigma_n = 0, significance = 0)
       .(
         origin_ID = i.ID,
         candidate_ID = x.ID,
-        similarity = abs(i.mean - x.mean) / sqrt((x.sd^2/x.frequency) + (i.sd^2/i.frequency))
+        #similarity = (i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)),
+        # diff_sd = (i.sd - x.sd)^2 / ((x.sd^2/(2*x.frequency)) + (i.sd^2/(2*i.frequency))),
+         similarity = pmax((i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)) , (i.sd - x.sd)^2 / ((x.sd^2/(2*x.frequency)) + (i.sd^2/(2*i.frequency))))
       )
     ]
     all_edges[, dummy := NULL]
@@ -158,7 +160,9 @@ similar_route.t <- function(tripID, trips, sigma_n = 0, significance = 0, r = 1)
       .(
         origin_ID = i.ID,
         candidate_ID = x.ID,
-        similarity = abs(i.mean - x.mean) / sqrt((x.sd^2/x.frequency) + (i.sd^2/i.frequency)),
+        #similarity = (i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)),
+        # diff_sd = (i.sd - x.sd)^2 / ((x.sd^2/(2*x.frequency)) + (i.sd^2/(2*i.frequency))),
+         similarity = pmax((i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)) , (i.sd - x.sd)^2 / ((x.sd^2/(2*x.frequency)) + (i.sd^2/(2*i.frequency)))),
         df = ((x.sd^2/x.frequency + i.sd^2/i.frequency)^2) / 
              ((x.sd^4)/(x.frequency^2*(x.frequency-1)) + (i.sd^4)/(i.frequency^2*(i.frequency-1)))
       )
