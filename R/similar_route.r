@@ -39,7 +39,7 @@
 #' \code{\link{get_timeBin_x_edges}} for edge statistics calculation
 #' @import data.table
 #' @export 
-similar_route <- function(tripID, trips, r=1,model = "normal", sigma_n = 2, significance = 0.05) {
+similar_route <- function(tripID, trips, r=1,model = "normal",control_sd = FALSE, sigma_n = 2, significance = 0.05) {
   
   model <- tolower(model)
   if(!model %in% c("normal","t")){stop("model must be normal or t")}
@@ -58,18 +58,19 @@ similar_route <- function(tripID, trips, r=1,model = "normal", sigma_n = 2, sign
   trips$timebin <- time_bins_readable(trips$time)
   if(significance > 1 | significance < 0)stop("significance must be between 0 and 1")
   if(model == "t"){
-    similar_route.t(tripID, trips, sigma_n = sigma_n, significance = significance,r)
+    similar_route.t(tripID, trips,control_sd, sigma_n = sigma_n, significance = significance,r)
   }
   else if(model == "normal"){
-    similar_route.normal(tripID, trips,r, sigma_n = sigma_n, significance = significance)
+    similar_route.normal(tripID, trips,r,control_sd, sigma_n = sigma_n, significance = significance)
   }
 }
 #' @export
-similar_route.normal <- function(tripID, trips,r, sigma_n = 0, significance = 0) {
+similar_route.normal <- function(tripID, trips,r,control_sd, sigma_n = 0, significance = 0) {
   timeBin_x_edges=get_timeBin_x_edges(trips)
   #remove the Global time bin
   multi_timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
   multi_timeBin_x_edges=multi_timeBin_x_edges[frequency>1 & sd!=0]
+  sd_thresholds <- (max(multi_timeBin_x_edges$sd)-min(multi_timeBin_x_edges$sd))*significance/2
   thresholds <- qnorm(1-(1-significance)/2, mean = 0, sd = 1)
   newtrips <- 1
   simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
@@ -91,9 +92,8 @@ similar_route.normal <- function(tripID, trips,r, sigma_n = 0, significance = 0)
       .(
         origin_ID = i.ID,
         candidate_ID = x.ID,
-        #similarity = (i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)),
-        # diff_sd = (i.sd - x.sd)^2 / ((x.sd^2/(2*x.frequency)) + (i.sd^2/(2*i.frequency))),
-         similarity = pmax((i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)) , (i.sd - x.sd)^2 / ((x.sd^2/(2*x.frequency)) + (i.sd^2/(2*i.frequency))))
+        diff_mean = (i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)),
+        diff_sd = ifelse(control_sd, pf(q = i.sd/x.sd,df1 = i.frequency,df2 = x.frequency),abs(i.sd-x.sd))
       )
     ]
     all_edges[, dummy := NULL]
@@ -103,7 +103,16 @@ similar_route.normal <- function(tripID, trips,r, sigma_n = 0, significance = 0)
     # pick valid edges based on threshold on every origin_ID
     sampled_IDs <- similarity_matrix[,
       {
-        candidates <- .SD[similarity <= thresholds, candidate_ID]
+      if(control_sd){
+        candidates <- .SD[diff_mean <= thresholds &
+          diff_sd>= 0.5 - 0.5 * significance & diff_sd <= 0.5 + 0.5 * significance,
+            candidate_ID]
+      }else{
+        candidates <-.SD[diff_mean <= thresholds &
+          diff_sd<= sd_thresholds,
+            candidate_ID]
+      }
+
         if(length(candidates) == 0) {
           s <- origin_ID
         }else if (length(candidates) == 1) {
@@ -138,10 +147,11 @@ similar_route.normal <- function(tripID, trips,r, sigma_n = 0, significance = 0)
 }
 
 #' @export
-similar_route.t <- function(tripID, trips, sigma_n = 0, significance = 0, r = 1) {
+similar_route.t <- function(tripID, trips,control_sd, sigma_n = 0, significance = 0, r = 1) {
   timeBin_x_edges=get_timeBin_x_edges(trips)
   multi_timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
   multi_timeBin_x_edges=multi_timeBin_x_edges[frequency>1 & sd != 0]
+  sd_thresholds <- (max(multi_timeBin_x_edges$sd)-min(multi_timeBin_x_edges$sd))*significance/2
   newtrips <- 1
   simulated_data <- trips[trip %in% tripID, .(linkId, timebin), trip][, {
     all_edges <- unique(.SD[, .(linkId, timebin)])
@@ -160,9 +170,8 @@ similar_route.t <- function(tripID, trips, sigma_n = 0, significance = 0, r = 1)
       .(
         origin_ID = i.ID,
         candidate_ID = x.ID,
-        #similarity = (i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)),
-        # diff_sd = (i.sd - x.sd)^2 / ((x.sd^2/(2*x.frequency)) + (i.sd^2/(2*i.frequency))),
-         similarity = pmax((i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)) , (i.sd - x.sd)^2 / ((x.sd^2/(2*x.frequency)) + (i.sd^2/(2*i.frequency)))),
+        diff_mean = (i.mean - x.mean)^2 / ((x.sd^2/x.frequency) + (i.sd^2/i.frequency)),
+        diff_sd = ifelse(control_sd, pf(q = i.sd/x.sd,df1 = i.frequency,df2 = x.frequency),abs(x.sd - i.sd)),
         df = ((x.sd^2/x.frequency + i.sd^2/i.frequency)^2) / 
              ((x.sd^4)/(x.frequency^2*(x.frequency-1)) + (i.sd^4)/(i.frequency^2*(i.frequency-1)))
       )
@@ -181,7 +190,9 @@ similar_route.t <- function(tripID, trips, sigma_n = 0, significance = 0, r = 1)
       
       sampled_IDs <- similarity_matrix[,
         {
-          candidates <- .SD[similarity <= threshold, candidate_ID]
+        candidates <- .SD[diff_mean <= thresholds &
+         diff_sd>= 0.5 - 0.5 * significance & diff_sd <= 0.5 + 0.5 * significance,
+          candidate_ID]
           if(length(candidates) == 0) s <- origin_ID
           else if(length(candidates) == 1) s <- candidates
           else s <- sample(candidates, 1)
