@@ -9,6 +9,7 @@ similar_route(
   trips,
   r = 1,
   model = "normal",
+  Ftest_sd = FALSE,
   sigma_n = 2,
   significance = 0.05
 )
@@ -24,42 +25,50 @@ similar_route(
 \item{length - Road segment length}
 }}
 
-\item{r}{Number of simulated route for every input (default=1)}
+\item{r}{Number of simulated route for every input in tripID (default=1)}
 
 \item{model}{Statistical model: "normal" (z-test) or "t" (Welch's t-test), default is "normal".
-normal distribution is faster.}
+Normal distribution is faster for large datasets.}
+
+\item{Ftest_sd}{Logical indicating whether to perform F-test for standard deviation similarity.
+If TRUE, uses F-test for SD comparison; if FALSE, uses a faster log variance ratio test(recommended for large dataset) (default = FALSE)}
 
 \item{sigma_n}{Std dev of noise added to route length (default=2)}
 
 \item{significance}{Significance level (α) for similarity threshold.
-Defaults is 0.05. A larger value will result in more posible choices with less similarity.}
+Defaults is 0.05. A larger value will include more choices with less similarity.}
 }
 \value{
-Data.table containing:
+Data.table containing simulated routes with columns:
 \itemize{
 \item{trip - Original trip ID}
-\item{newtrip - Simulation iteration ID}
-\item{linkId - Sampled road segment}
+\item{newtrip - Simulated new trip ID}
+\item{linkId - Soad segment identifier}
 \item{timeBin - Time period classification}
 \item{frequency - Historical edge usage count}
-\item{mean - Historical mean travel time}
-\item{sd - Historical travel time std dev}
+\item{mean - Historical mean of log travel time}
+\item{sd - Historical standard deviation of log travel time}
+\item{length - Road segment length }
 }
 }
 \description{
-This function generates simulated routes by comparing edge statistics using
-either Normal distribution(for a faster calculation) or Welch's t-test for similarity assessment.
+This function generates simulated routes by comparing edge statistics using:
+Normal distribution (for faster calculation) or Welch's t-test for
+mean similarity assessment. F-test or log variance ratio normal approximation
+test for
+variance similarity assessment.
 }
 \examples{
 data(trips)
 names(trips) <- c("trip", "linkid", "timebin", "speed", "duration", "length", "time")
 # Basic simulation with normal distribution
-sim_normal <- similar_route(c(2700), trips, significance=0.05)
+sim_normal <- similar_route(c(2700), trips, significance = 0.05)
 # t-distribution simulation with significance threshold
-sim_t <- similar_route(c(2700), trips, model="t", significance=0.05)
+sim_t <- similar_route(c(2700), trips, model = "t",Ftest_sd = TRUE, significance = 0.15)
 }
 \seealso{
 \code{\link{get_timeBin_x_edges}} for edge statistics calculation
+\code{\link{time_bins_readable}} for time period classification
 }
 \author{
 Mingze Li \href{mailto:mingzeli7@cmail.carleton.ca}{mingzeli7@cmail.carleton.ca}
