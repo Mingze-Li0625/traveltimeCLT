@@ -18,7 +18,8 @@
 #' @param model Statistical model: "normal" (z-test) or "t" (Welch's t-test), default is "normal".
 #' Normal distribution is faster for large datasets.
 #' @param Ftest_sd Logical indicating whether to perform F-test for standard deviation similarity.
-#' If TRUE, uses F-test for SD comparison; if FALSE, uses a faster log variance ratio test(recommended for large dataset) (default = FALSE)
+#' If TRUE, uses F-test for SD comparison; if FALSE, uses a faster log variance ratio test
+#' (may include more choices with less similarity, only recommended for large dataset) (default = FALSE)
 #' @param sigma_n Std dev of noise added to route length (default=2)
 #' @param significance Significance level (α) for similarity threshold. 
 #' Defaults is 0.05. A larger value will include more choices with less similarity.
@@ -166,8 +167,7 @@ similar_route.t <- function(tripID, trips,Ftest_sd, sigma_n = 0, significance = 
   timeBin_x_edges=get_timeBin_x_edges(trips)
   multi_timeBin_x_edges=timeBin_x_edges[timeBin!="Global"]
   multi_timeBin_x_edges=multi_timeBin_x_edges[frequency>1 & sd != 0]
-  thresholds <- qnorm(1-(1-significance)/2, mean = 0, sd = 1)
-  sd_thresholds <- thresholds
+  sd_thresholds <- qnorm(1-(1-significance)/2, mean = 0, sd = 1)
   newtrips <- 1
   simulated_data <- trips[data.table(trip = tripID)[, idx := .I],on = .(trip), nomatch = 0
 ][, .(linkId, timebin), by = .(trip, idx)][, {
@@ -215,11 +215,11 @@ similar_route.t <- function(tripID, trips,Ftest_sd, sigma_n = 0, significance = 
       sampled_IDs <- similarity_matrix[,
         {
                 if(Ftest_sd){
-        candidates <- .SD[diff_mean <= thresholds &
+        candidates <- .SD[diff_mean <= threshold &
           diff_sd>= 0.5 - 0.5 * significance & diff_sd <= 0.5 + 0.5 * significance,
             candidate_ID]
       }else{
-        candidates <-.SD[diff_mean <= thresholds &
+        candidates <-.SD[diff_mean <= threshold &
           diff_sd<= sd_thresholds,
             candidate_ID]
       }

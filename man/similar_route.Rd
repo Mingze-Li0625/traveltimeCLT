@@ -31,7 +31,8 @@ similar_route(
 Normal distribution is faster for large datasets.}
 
 \item{Ftest_sd}{Logical indicating whether to perform F-test for standard deviation similarity.
-If TRUE, uses F-test for SD comparison; if FALSE, uses a faster log variance ratio test(recommended for large dataset) (default = FALSE)}
+If TRUE, uses F-test for SD comparison; if FALSE, uses a faster log variance ratio test
+(may include more choices with less similarity, only recommended for large dataset) (default = FALSE)}
 
 \item{sigma_n}{Std dev of noise added to route length (default=2)}
 
@@ -43,7 +44,7 @@ Data.table containing simulated routes with columns:
 \itemize{
 \item{trip - Original trip ID}
 \item{newtrip - Simulated new trip ID}
-\item{linkId - Soad segment identifier}
+\item{linkId - Road segment identifier}
 \item{timeBin - Time period classification}
 \item{frequency - Historical edge usage count}
 \item{mean - Historical mean of log travel time}
